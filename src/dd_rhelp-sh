@@ -14,9 +14,36 @@ bar_lines=15  # nb of lines for bar drawing.
 #
 #
 
-# check existence of these programs
-depends "${SED}" "${GREP}" "${CAT}" "${CUT}" "${TR}" "${HEAD}" \
-        "${TAIL}" "${TOUCH}" "${WC}" "${BC}"
+
+function get_path
+{
+    echo $(type -p $1) 
+}
+
+function require_exe 
+{
+    path=$(get_path $1)
+
+    if test -z "$path" ; then
+	print_error "requires '$1' to run... And it couldn't find it." >&2
+	exit 1
+    else
+	echo $path
+    fi
+}
+
+# checks each required program and get their path.
+SED=$(require_exe sed) || exit 1
+GREP=$(require_exe grep) || exit 1
+CAT=$(require_exe cat) || exit 1
+CUT=$(require_exe cut) || exit 1
+TR=$(require_exe tr) || exit 1
+HEAD=$(require_exe head) || exit 1
+TAIL=$(require_exe tail) || exit 1
+TOUCH=$(require_exe touch) || exit 1
+WC=$(require_exe wc) || exit 1
+BC=$(require_exe bc) || exit 1
+tr=$(require_exe tr) || exit 1
 
 # usage string :
 usage="$exname {filename|device} {output-file} [{info}]
@@ -27,37 +54,45 @@ usage="$exname {filename|device} {output-file} [{info}]
 # === Argument checking...
 #
 
-if [ "$1" == "--help" ] 
-then
-    print_usage
-    "${CAT}" <<EOF
+if [ "$#" == "1" ]; then
+
+    if [ "$1" == "--help" ]; then
+	print_usage
+	"${CAT}" <<EOF
 
 Options:
   --help            Print this message
   --version         Print version information
   {filename|device} The source file (it can be a block device)
   {output-file}     The destination file
-  info              Specifying "info" as third argument will only
-                      display info gathered in log file and exit.
+  info              Specifying "info" as third argument will display 
+                      summary informations on ongoing recovery and
+		      exit without taking any actions.
 
 Note:
   A log file will be created, and named '<output-file>.log'. This is a
-dd_rescue log file (which is human readable). This program works by 
-gathering info in a dd_rescue log to manage the rescuing.
+dd_rescue log file (which is human readable). This log file is important
+as dd_rhelp feeds itself with its contents to manage correctly dd_rescue.
 
 Send bug reports, or comments to $email.
 Sorry for the shitty programming style.
 EOF
-    exit
-fi
+	exit
+    fi
 
-if [ "$1" == "--version" ] 
-then
-    "${CAT}" <<EOF
+    if [ "$1" == "--version" ] ; then
+	"${CAT}" <<EOF
 $exname $version ($state)
 EOF
-    exit
+	exit
+    fi
+
+    echo "Need 2 arguments..."
+    print_usage
+    exit 1
 fi
+
+
 
 if [ "$1" == "" ] 
 then
@@ -169,12 +204,13 @@ nb_stars=$[ $bar_lines * $COLUMNS ] # nb of char to display progress bar...
 chunk=""
 
 
+
 function get_valid_dd_rescue
 {
 
     [ "$DEBUG" == "on" ] && echo "Finding dd_rescue binary" >&2
 
-    path=$(type -ap dd_rescue | "${TAIL}" -1)
+    path=$(get_path dd_rescue)
     
     version=$("$path" -V 2>&1 | grep "dd_rescue Version" | cut -f 3 -d " " |
     cut -f 1 -d ",")
@@ -274,7 +310,7 @@ function bc_calc ()
 function get_eof()
 {
 
-  eoflines="$("${CAT}" "$logfile" | "$GREP" "$eofstring" | "$SED" 's/^dd_rescue: (info): .* (\([0-9\.]\+\)k): EOF$/\1/g')"
+  eoflines="$("${CAT}" "$logfile" | "$tr" -d "\\r" | "$GREP" "$eofstring" | "$SED" 's/^dd_rescue: (info): .* (\([0-9\.]\+\)k): EOF$/\1/g')"
 
   eof="nothing"
 
@@ -469,7 +505,7 @@ function get_next_pos()
 function swallow_last_summary()
 {
   # last summary of log (4 lines output by printreport())
-  last_logcontent=$("${CAT}" "$logfile" | "$GREP" "$string" -A 3 | "${TAIL}" -4)
+  last_logcontent=$("${CAT}" "$logfile" | "$tr" -d "\\r" | "$GREP" "$string" -A 3 | "${TAIL}" -4)
   process_log "$last_logcontent"
 
   get_eof
@@ -519,7 +555,7 @@ function show_bar()
     if [ "$eof_limit" != "0" ]
     then
 	
-	# eof_limit is nb of Kb represented by one char.
+	# c_res is nb of Kb represented by one char.
 	c_res="$(bc_calc 10 "$eof_limit / $nb_stars")";
 
 	# next_pos is place of next jump in chars.
@@ -639,7 +675,7 @@ function show_info()
     else
       echo "- max file size : $eof"
 
-      echo -en "- Biggest hole size : " "$(bc_calc 1 "$(get_next_pos | "${CUT}" -f 2 -d ":") * 2")" "k"
+      echo -en "- Biggest hole size : " "$(bc_calc 1 "$(get_next_pos | "${CUT}" -f 2 -d ":") * 2")" "k "
     fi
 
   parsing="$logcontent"
@@ -677,17 +713,24 @@ function show_info()
       fi
       start=$(echo "$i" | "${CUT}" -f 2 -d "-")
     done
-    echo -e " - total holes : ${size}k"
+    echo -e "- total holes : ${size}k"
 
     echo -e "- xferd(succ/err) : ${total_xferd}k(${total_succxfer}k/${total_errxfer}k)"
 
-    if test "$chunk"; then
-	last_chunk=$(echo "$chunk" | "${TAIL}" -1 )
-	eof_limit=$(echo "$last_chunk" | "${CUT}" -f 2 -d "-")
-    else
-	eof_limit=0
-    fi
+    eof_limit=$(get_last_chunk)
 
+    echo -en "- EOF "
+
+    if  [ "$eof" != "nothing" ] && 
+	 [ "$eof" == "$eof_limit" ];then
+	echo "is found and is at ${eof}k."
+    else
+	if [ "$eof" != "nothing" ]; then
+	    echo "is not found, but between ${eof_limit}k and ${eof}k."
+	else
+	    echo "is not found, but greater than ${eof_limit}k"
+	fi
+    fi
 
     if [ "$size" == "0" ] && [ "$eof" != "nothing" ] && 
 	[ "$eof" == "$eof_limit" ];then
@@ -772,13 +815,13 @@ function load_log()
 # loading into memory Summary info found in log file...
 #
     # line number of last save_log entry...
-    lnb_save=$("${CAT}" -n "$logfile" | grep "chunk:" -A 2 | "${TAIL}" -3)
+    lnb_save=$("${CAT}" -n "$logfile" | "$tr" -d "\\r" | grep "chunk:" -A 2 | "${TAIL}" -3)
     
 
     if test "$lnb_save" ;then
 	lnb_save=$(echo $lnb_save | "${HEAD}" -1 | cut -f 1 -d " ")
 
-	end_log="$("${TAIL}" "+$lnb_save" "$logfile")"
+	end_log="$(cat "$logfile" | "$tr" -d "\\r" | "${TAIL}" "+$lnb_save")"
 
 	last_lines=$(echo "$end_log" | grep "chunk:" -A 2 | "${TAIL}" -3)
 	
@@ -803,7 +846,7 @@ function load_log()
     fi
 	
     # select all summary info of dd_rescue
-    log=$("${CAT}" "$logfile" | "$GREP" "$string" -A 3 )
+    log=$("${CAT}" "$logfile" | "$tr" -d "\\r" | "$GREP" "$string" -A 3 )
 
     # Set EOF with log.
     get_eof
@@ -841,7 +884,7 @@ if [ "$opt" != "info" ];then
     [ "$?" != "0" ] && exit 1
 fi
 
-while [ "$(echo -n "$chunk" | "${WC}" -l)" != "1" ] || [ "$eof" == "nothing" ]
+while [ "$(echo "$chunk" | "${WC}" -l)" != "1" ] || [ "$eof" == "nothing" ]
 do
 
   info="$(show_info)" 

@@ -1,25 +1,18 @@
 AC_INIT
-AM_INIT_AUTOMAKE(dd_rhelp,0.0.2)
-AC_PROG_CC
+AM_INIT_AUTOMAKE(dd_rhelp,0.0.5)
 AC_PROG_INSTALL
 AC_PATH_PROGS(BASH, bash)
-AC_PATH_PROGS(SED, sed)
-AC_PATH_PROGS(CAT, cat)
-AC_PATH_PROGS(CUT, cut)
-AC_PATH_PROGS(TR, tr)
-AC_PATH_PROGS(HEAD, head)
-AC_PATH_PROGS(TAIL, tail)
-AC_PATH_PROGS(TOUCH, touch)
-AC_PATH_PROGS(GREP, grep)
-AC_PATH_PROGS(WC, wc)
-AC_PATH_PROGS(BC, bc)
+
+if test -z "${BASH}"; then 
+   echo "You need BASH to run this script... "
+   exit 1
+fi
+
 EMAIL="vaab@free.fr"
 AC_SUBST(EMAIL)
 AUTHOR="LAB Valentin"
 AC_SUBST(AUTHOR)
-CR_DATE="2003"
-AC_SUBST(CR_DATE)
-CR_DATE="2003"
+CR_DATE="2004"
 AC_SUBST(CR_DATE)
 EXE_NAME="dd_rhelp"
 AC_SUBST(EXE_NAME)

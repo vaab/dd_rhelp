@@ -1,3 +1,25 @@
+2004-06-02  LAB Valentin  <vaab@free.fr>
+
+        * src/dd_rhelp-sh (main): fixed a bug, and removed "0d" caracters when
+        reading from log file...
+        * configure.in: Removed the configure detection of required
+        programs... Updated version to 0.0.5. 
+        * TODO: Updated the TODO (removed some entries).
+
+2004-01-12  LAB Valentin  <vaab@free.fr>
+
+	* src/dd_rhelp-sh (main): Required programs (as bc, cat, head, tail,
+        wc... ) are now fetched at runtime.
+	* configure.in: Removed the configure detection of required 
+        programs... Updated version to 0.0.4. Cleaned redundant code. Updated
+        Date to 2003 to 2004. Release of 0.0.4	
+
+2004-01-11  LAB Valentin  <vaab@free.fr>
+
+	* src/dd_rhelp-sh (main): Small correction of comments. Cleaning of
+	code, and changed report output a bit to make clearer whether
+	dd_rhelp has found or not the EOF (End Of File). Release of 0.0.3
+
 2003-11-25  LAB Valentin  <vaab@free.fr>
 
 	* src/dd_rhelp-sh (main): Tons of bug fixes, hygienic modification, and

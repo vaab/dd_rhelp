@@ -2,18 +2,23 @@
 # === Do not touch these vars, they are compiled at 'configure' time.
 #
 
+
+# THIS CODE IS OBSOLETE : PROGRAMS PATHS ARE COMPUTED AT RUNTIME.
+# ---
 # Where to find programs
 
-SED="@SED@"
-GREP="@GREP@"
-CAT="@CAT@"
-CUT="@CUT@"
-TR="@TR@"
-HEAD="@HEAD@"
-TAIL="@TAIL@"
-TOUCH="@TOUCH@"
-WC="@WC@"
-BC="@BC@"
+#SED="@SED@"
+#GREP="@GREP@"
+#CAT="@CAT@"
+#CUT="@CUT@"
+#TR="@TR@"
+#HEAD="@HEAD@"
+#TAIL="@TAIL@"
+#TOUCH="@TOUCH@"
+#WC="@WC@"
+#BC="@BC@"
+# ---
+
 
 # Some info
 

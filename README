@@ -81,6 +81,11 @@ dd_rhelp --version
 When running dd_rhelp you can safely Ctrl-C, or kill dd_rhelp, it'll resume 
 its job the next time you call it.
 
+Olivier SANTIANO, a french dd_rhelp user shared his experience of complete 
+process of recovering his hard drive with dd_rhelp and post-dd_rhelp recovery
+work :
+  http://f1efq.free.fr/save.htm (in french)
+
 How do I install this package ?
 -------------------------------
 
@@ -104,13 +109,24 @@ Requirements ?
 
 If you can ./configure && make... then it should execute fine.
 It worked fine for me (Home made distrib) on big harddrives (partitions of 
-15 Gigs).
+15 Gigs). Received positive feedbacks on large partition (60 Gigs), and it
+should only be limited by the linux kernel limitation. Though the bash script
+could be longuer to compute next position in very large disk with lots of
+bad sectors scatered all over your disk.
 
 It worked on Debian, and on a Knoppix CD. Tested it with a 1.44M diskette with
-badsectors and it worked fine.
+badsectors and it worked fine. (This was for version 0.0.2)
+
+Tested 0.0.4 on : (with a 1.44 diskette with badsectors)
+- Sys Rescue CD (http://www.sysresccd.org) 
+	* Note : you'll need to "make" it somewhere else.
+- KNOPPIX 3.3 (http://www.knoppix.com)
+	* Note : perfect, you can configure && make and download dd_rescue 
+	v1.03 and start recovery.
 
 If you have any other experiences of dd_rhelp, please let me know.
 
 IMPORTANT NOTE :
+
 This shell script needs version >= 1.03 of dd_rescue !!!!
 It won't detect your version in "./configure && make" but at runtime !

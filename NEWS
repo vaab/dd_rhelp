@@ -1,3 +1,14 @@
+Version 0.0.5
+        - BUGFIX : 
+        - Strange behavior when you had 2 segments in the beginning
+        - Clean log file of caracters "0d" before reading it. This messed around
+          with wc (not sure), or bc.
+Version 0.0.4
+	- Automatic detection of all programs is now done at runtime rather
+        than at configure time.
+Version 0.0.3
+        - Better detection and information about EOF.
+        - Faster and cleaner than 0.0.2
 Version 0.0.2
 	- Check version of dd_rescue, and try to find the good one (>=1.03)
 	- dd_rhelp now writes a summary of its computation in log, allowing

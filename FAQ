@@ -1,0 +1,100 @@
+WHEN CAN I STOP THE RECOVERY ?
+------------------------------
+
+> I've been executing the dd_rhelp program for a week now and notice
+> that my recover file is about 57,5 GB. The broken harddisk was 
+> about 60 GB and has a lot of bad-sectors.
+> Can I stop the program and edit the recovered file ??
+
+Yep, the remaining disk sectors must be nearly all bad-sectors as dd_rhelp
+starts to recover mostly valid sectors. You can stop dd_rhelp (Ctrl-C)
+whenever you think you've recovered a reasonnable amount of data. When you
+have recovered most of the disk, as in your case, you'll end up waiting
+really long to recover really few data. You'll notice it easily by looking at
+dd_rhelp output : jumping to different offset very often and launching
+dd_rescue on errors each times.
+
+Another trick to decide whether you can definitevely quit the recovery via
+dd_rhelp is to look at the small reports of dd_rescue : There's a line
+containing (in dd_rhelp 0.0.2) :
+
+- Biggest hole size :  <X> k - total holes : <Y> k
+
+<X> is the maximum gap size (in one block) of data that has NOT been
+checked with dd_rescue. This tells how thin dd_rhelp has seeked the
+remaining sectors
+for valid data.
+<Y> should be the remaining data to be checked with dd_rescue.
+
+At each iteration, the gap size should reduce... But it'll reduce less and
+less as you reach the end of the recovery.
+
+As a last advice : In most usual cases, if the recovery takes too long,
+YOU SHOULD STOP THE RECOVERY BEFORE THE END ! Especially on big hard
+drives (and 60 Gigs is big) where you expect a lot of bad sectors (a few
+Megs only is lot). If you launched dd_rhelp to let it runs until the end
+of the recovery, then you should have used dd_rescue directly, as dd_rhelp
+jobs is only to launch dd_rescue on ALL THE DISK by little bits.
+
+And dd_rhelp has been written to choose to start the recovery by the
+valid data, LETTING YOU THE POSSIBILITY TO STOP THE RECOVERY whenever you
+think you've waited enough.
+
+IS THE RECOVERY FILE VALID FOR RECOVER OPERATION ?
+--------------------------------------------------
+
+The recovered data is mapped directly to the recovery file. The gaps that
+aren't already parsed with dd_rescue are filled with zeroes.
+The bad sectors data (data that wasn't recoverable) has been written as
+zeroes too.
+
+Canceling dd_rhelp or dd_rescue with a (Ctrl-C) won't destroy the
+recovered file or whatever : the file is updated by dd_rescue directly as
+it recovers data. So you'll find the most accurate copy of your source
+file/dev in the recover file at anytime.
+
+One last thing : recover operations that you will probably launch on the
+recovered data might need to work on a file that have the same size than
+your source file/device.
+
+So you might want to check that your recovered file is the same size than
+your source file/device.
+
+HOW DO I CHECK THAT THE RECOVERY FILE IS THE SAME SIZE THAN THE FILE/DEVICE ?
+-----------------------------------------------------------------------------
+
+The recovery file will have the size to contain the last sectors parsed via
+dd_rescue. THIS WON'T BE THE SIZE OF YOUR SOURCE FILE until dd_rhelp
+launched dd_rescue on the last sectors of your source file/dev. dd_rhelp
+(as dd_rescue) doesn't know where your source file stops until it tries to
+copy beyond the End Of the File (called EOF).
+
+This can be found in the small reports it prints regularly or at the bottom of
+the progress bar. (it wasn't quite obvious before version 0.0.3, it is now
+specified explicitly in reports.)
+
+dd_rhelp should find quite quickly the EOF, so this shouldn't be a
+problem most of the time. But, in some rare cases, when the end of the 
+file/device to recover is full of bad sectors, it could take longer to
+find.
+
+WHAT MUST I DO AFTER USING DD_RHELP TO RECOVER MY DISK INFORMATIONS ?
+---------------------------------------------------------------------
+
+This topic is out of this FAQ coverage for now. I may build a complete
+FAQ on this subject.
+
+Olivier SANTIANO, a french dd_rhelp user shared his experience of complete 
+process of recovering his hard drive with dd_rhelp and post-dd_rhelp recovery
+work :
+  http://f1efq.free.fr/save.htm (in french)
+
+I'VE GOT A QUESTION ABOUT DD_RHELP, WHAT CAN I DO ?
+--------------------------------------------------
+
+Mail me at vaab@free.fr
+
+I'VE GOT A PROBLEM WITH DD_RHELP, WHAT CAN I DO ?
+--------------------------------------------------
+
+Mail me at vaab@free.fr
