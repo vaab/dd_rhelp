@@ -1,0 +1,16 @@
+  x - close parts should be joined by testing gaps between them...
+  x - BUG : show_bar doesn't correctly draw end of bar when a correct EOF is
+ found.
+  x - found which is the correct EOF in log.
+  x - Tests and ensures that nb_err is greater than 1.
+  x - First time it is launched, checks right and left limits of chunks.
+  x - Make a estimation time of end. Worse and good.
+  x - Test if dd_rescue is the good version : the one that makes a summary 
+ even in maxerr mode
+  x - less but clearer output if possible (ansi color ?)
+  x - Real handling of options... for max_err min_bs max_bs, the log_file 
+ source... etc ...
+  x - Much cleaner code.
+  x - Lots of testing.
+  x - Better bar (in rectangular x * y style for example)
+  x - Better internal Map, with dd_rescued byte, error bytes, clean bytes...

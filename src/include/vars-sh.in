@@ -1,0 +1,24 @@
+#
+# === Do not touch these vars, they are compiled at 'configure' time.
+#
+
+# Where to find programs
+
+SED="@SED@"
+GREP="@GREP@"
+CAT="@CAT@"
+CUT="@CUT@"
+TR="@TR@"
+HEAD="@HEAD@"
+TAIL="@TAIL@"
+TOUCH="@TOUCH@"
+WC="@WC@"
+BC="@BC@"
+
+# Some info
+
+email="@EMAIL@"
+version="@VERSION@"
+state="@STATE@"
+author="@AUTHOR@"
+

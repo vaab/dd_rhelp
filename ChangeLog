@@ -1,0 +1,24 @@
+2003-11-25  LAB Valentin  <vaab@free.fr>
+
+	* src/dd_rhelp-sh (main): Tons of bug fixes, hygienic modification, and
+	rewitring of lots of parts. More user friendly. Release of 0.0.2.
+
+2003-06-15  LAB Valentin  <vaab@free.fr>
+
+	* src/dd_rhelp-sh (main): All external programs were aliased "${prog}"
+	(show_bar): Added test for eof_limit=0 that generated divide error.
+	(get_next_pos): Corrected beginning comportement that was buggy
+	(main): Corrected test to do backwards dd_rescue. Working now.
+	(main): Sanity modifications...
+	(main): less confusing output when missing files are created.
+	(main): took away the local shell libs call and included its source in script.
+	(main): esthetic of output
+
+	* Makefile.am (dd_rhelp): Fixed a typo that prevented TODO file from being copied as comment.
+	(main): Modification to add direct compilation of dd_rescue.c
+	(main): Modification to add libcommon and libcolor ...
+
+2003-06-14  LAB Valentin  <vaab@free.fr>
+
+	* First packaged release. Alpha mode, not tested.
+

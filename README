@@ -1,0 +1,116 @@
+What is dd_rhelp ?
+-----------------
+
+dd_rhelp is a bash script that handles a very usefull program written in C by
+Kurt Garloff which is called dd_rescue, it roughly act as the dd linux command 
+with the caracteristic to NOT stop when it falls on read/write errors.
+
+This makes dd_rescue the best tool for recovering hard drive having bad 
+sectors. (dd_rescue can be found : http://www.garloff.de/kurt/linux/ddrescue )
+
+But using it is quite time consuming. This is where dd_rhelp come to help.
+
+In short, it'll use dd_rescue on your entire disc, but will try to gather the
+maximum valid data before trying for ages on badsectors. So if you leave
+dd_rhelp work for infinite time, it'll have the same effect as a simple 
+dd_rescue. But because you might not have this infinite time (this could
+indeed take really long in some cases... ), dd_rhelp will jump over bad
+sectors and rescue valid data. In the long run, it'll parse all your device
+with dd_rescue.
+You can Ctrl-C it whenever you want, and rerun-it at will, it'll resume it's
+job as it depends on the log files dd_rescue creates.
+
+In addition, progress will be shown in a ASCII picture of your device beeing
+rescued.
+
+As stated by Kurt Garloff for his dd_rescue program : 
+"Just one note: It does work. I unfortunately did not just create this program
+ for fun ..."
+
+As it is for dd_rhelp, which has saved me YEARS on my hard drive.
+
+Why do people want to use dd_rhelp ?
+-----------------------------------
+
+Well, you do not WANT to use dd_rhelp. I hope you'll never have to use it.
+
+Basically, if you have bad sector problems you'll have several solutions 
+depending on the filesystem, the partition table, and what is accessible...
+
+Sometimes, you'll have to copy all the valid partition data in a file on
+a healthier filesystem. Then mount the file with loopback device to rebuild 
+the damaged filesystem information. This is where dd_rhelp and dd_rescue are 
+meant to be used.
+
+dd_rescue is a great program, but using it sometimes can be time consuming as
+it won't stop on errors but will take long to get over them.
+This can really take a long time if you have much bad sectors. (and I had this
+problem).
+
+As bad sectors tends to be in large groups and these groups seems to tend to 
+be dispatched on drive, and if you just launch dd_rescue on the beginning of
+your drive and there is a large group of bad sectors coming next, you could 
+be waiting for years ! (and without rescuing any data). And you cannot know
+if there is any valid data to rescue AFTER this chunk and how long it will
+take...
+
+So your solution with dd_rescue is to jump ahead randomly and try to copy from
+a chosen offset. Then you could again fall on a group of bad sectors...
+and then you should stop dd_rescue and jump somewhere else on your drive. 
+This behavior involves the user's constant presence (you !).
+
+The idea of the dd_rhelp shell script is to do this job : launching
+dd_rescue for you on the disc while trying to get the max amount of data 
+out of your disc in a minimum of time. It'll be jumping over bad blocks, 
+using the reverse copy option of dd_rescue to pin out bad_sector group and 
+rescue as much data as you could have rescued manualy.
+
+How should I use it ?      
+---------------------
+
+First build it from sources, with "./configure && make" 
+Optionnaly run "make install"...
+
+This shell script is very basic and not well written, but it supports the 
+"--help" and "--version" of GNU Coding Standard. It should be quite clear.
+
+so go for a :
+
+dd_rhelp --version
+
+When running dd_rhelp you can safely Ctrl-C, or kill dd_rhelp, it'll resume 
+its job the next time you call it.
+
+How do I install this package ?
+-------------------------------
+
+basic : "./configure && make && make install" should do the trick.
+
+How does it work ?
+-------------------
+
+dd_rhelp uses log files made by dd_rescue. Precisely, it searches for the
+"Summary report" that dd_rescue prints when its job is over. 
+
+1 - dd_rhelp creates hitself an internal representation of what has been
+parsed with dd_rescue.
+2 - It'll find the greatest part of the disk that hasn't been tested and will 
+launch dd_rescue from the middle of this part backwards and forwards until it 
+rescues without error all data, or until it falls on 5 consecutive read errors.
+3 - go back to step 1 unless everything has been dd_rescued...
+
+Requirements ?
+--------------
+
+If you can ./configure && make... then it should execute fine.
+It worked fine for me (Home made distrib) on big harddrives (partitions of 
+15 Gigs).
+
+It worked on Debian, and on a Knoppix CD. Tested it with a 1.44M diskette with
+badsectors and it worked fine.
+
+If you have any other experiences of dd_rhelp, please let me know.
+
+IMPORTANT NOTE :
+This shell script needs version >= 1.03 of dd_rescue !!!!
+It won't detect your version in "./configure && make" but at runtime !

@@ -1,0 +1,26 @@
+root@ttyp0[dd_rhelp]# ./dd_rhelp /dev/fd0 disk.dump
+=== dd_rhelp INFO - 9 chunks...
+- Jump pos : 1083.0 - max file size : 1440.0
+- Biggest hole size :  22 k - total holes : 130.5k
+- xferd(succ/err) : 1309.5k(1275.5k/34.0k)
+=== BAR === [ 'x' dd_rescued, '*' next jump point, '|' '.' not dd_rescued ]
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|.............|xxxxxxxxxxxxxxx|........
+......|xxxxxxxxxxxxxxxxxxxxxxxxxx|.|xxxxxxxxxxxxxxxxxxxxxxxxxxxxx|..............
+.|xxxxxxxxxxx|........*........|xxxxxxxxxxxxx|................|xxxxxxxxxxxxxxxxx
+xxxxxxxxxxx|.............|xxxxxxxxxxxxxxx|.............|xxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+=== Bar was drawn from 0 to 1440.0
+=== launched via 'dd_rhelp' at 1083.0k, 11k <<< ===
+dd_rescue: (info): ipos:      1083.0k, opos:      1083.0k, xferd:         0.0k
+             -     errs:      0, errxfer:         0.0k, succxfer:         0.0k
+             +curr.rate:        0kB/s, avg.rate:        0kB/s, avg.load:  0.0%

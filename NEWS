@@ -1,0 +1,14 @@
+Version 0.0.2
+	- Check version of dd_rescue, and try to find the good one (>=1.03)
+	- dd_rhelp now writes a summary of its computation in log, allowing
+	   faster loading times.
+	- bar size is better ajusted and is counted in lines.
+Version 0.0.1
+	- work without knowing when the file ends (usefull for some /dev/*)
+	- ANSI bar showing advancement of dd_rescue
+	- Auto-manage dd_rescue start and stop parameters
+	- Runs until all disc is rescued
+	- Can be Killed/Ctrl-C... will resume its job the next time it is run.
+	- feeds it self on the normal dd_rescue log file and maintain it. So
+            it can resume on normal dd_rescue log created without dd_rhelp.
+ 
