@@ -65,6 +65,17 @@ out of your disc in a minimum of time. It'll be jumping over bad blocks,
 using the reverse copy option of dd_rescue to pin out bad_sector group and 
 rescue as much data as you could have rescued manualy.
 
+Why use dd_rhelp and not dd_rescue ?
+------------------------------------
+
+This is a good question. dd_rhelp uses dd_rescue to compute a recovery path through the device that will focus on valid data recovering. This recovery path will go through all the device, exactly as dd_rescue could do it on its own without any path. This means that dd_rhelp will save you time ONLY IF YOU INTEND TO CANCEL ITS JOB BEFORE THE END of a full recovery.
+
+Why wouldn't you want a full recovery ? because a considerable amount of time is taken to try to rescue badsectors. This amount of time can be mesured in days, month, years, depending on your device capacity and its defectiveness. You might not want to spend this time knowing that 99 percent of this time will be taken to look at badsector and won't lead to any more data recovering...
+
+dd_rhelp shifts this useless waiting time to the end. Using dd_rescue strait throughout your device make your waiting time dependent on the badsector distribution. 
+
+Think about dd_rescue standalone if you only intend (and can afford) to wait until a full dd_rescue scan. dd_rhelp optimizes only the order in which this full scan will occur to focus on recovery of what will be recoverable in first. So in the end, launching dd_rhelp for a full scan will take exactly the same time dd_rescue would have taken plus a considerable time which correspond to the overhead of calculating its path.
+
 How should I use it ?      
 ---------------------
 
@@ -109,13 +120,13 @@ Requirements ?
 
 If you can ./configure && make... then it should execute fine.
 It worked fine for me (Home made distrib) on big harddrives (partitions of 
-15 Gigs). Received positive feedbacks on large partition (60 Gigs), and it
-should only be limited by the linux kernel limitation. Though the bash script
-could be longuer to compute next position in very large disk with lots of
+15 Gigs). Received positive feedbacks on large partition (60 Gigs and 200 Gigs), and it should only be limited by the linux kernel limitation. Though the bash script could be longuer to compute next position in very large disk with lots of
 bad sectors scatered all over your disk.
 
 It worked on Debian, and on a Knoppix CD. Tested it with a 1.44M diskette with
 badsectors and it worked fine. (This was for version 0.0.2)
+
+Darwin/MacOSX should be supported with GNU sed, GNU bc installed. Has been working since 0.0.6 .
 
 Tested 0.0.4 on : (with a 1.44 diskette with badsectors)
 - Sys Rescue CD (http://www.sysresccd.org) 

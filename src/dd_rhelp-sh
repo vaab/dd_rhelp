@@ -253,9 +253,9 @@ function get_valid_dd_rescue
 # std_out : nothing
 function is_num ()
 {
-    rest=$(echo "$1" | sed 's/^\([0-9]\+\)\?\(\.\([0-9]\+\)\)\?$/X/g')
+    rest=$(echo $1 | sed 's/^\([0-9]\+\)\?\(\.\([0-9]\+\)\)\?$/X/g')
     
-    if [ "$rest" != "X" ] ;then
+    if [ -z "$(echo $1 | grep '^\([0-9]\+\)\?\(\.\([0-9]\+\)\)\?$')" ] ;then
 	return 1
     else
 	return 0
@@ -341,11 +341,11 @@ function add_chunk()
 
     if ! is_num "$arg_start" ||
 	! is_num "$arg_stop"; then
-	print_error "*** add_chunk : invalid argument '$1'"
+	print_error "*** add_chunk : invalid argument '$1' (is not correctly formatted as number:number)"
     fi
 
     if test "$(bc_calc 1 "$arg_start < $arg_stop")" == "0"; then
-	print_error "*** add_chunk : invalid argument '$1'"
+	print_error "*** add_chunk : invalid argument '$1' (these are not logical values)"
     fi
 
     overlap="no"
@@ -882,9 +882,19 @@ fi
 if [ "$opt" != "info" ];then
     DD_RESCUE="$(get_valid_dd_rescue)"
     [ "$?" != "0" ] && exit 1
+else
+    echo "$(show_info)"
+    if [ "$?" == "0" ] ; then 
+       echo "ALL your data has been dd_rescued !!"
+    else 
+       show_bar
+    fi
+    exit 0
 fi
 
-while [ "$(echo "$chunk" | "${WC}" -l)" != "1" ] || [ "$eof" == "nothing" ]
+while [ "$(echo "$chunk" | "${WC}" -l)" != "1" ] ||
+      [ "$(get_last_chunk)" != "$eof" ] ||
+      [ "$eof" == "nothing" ]
 do
 
   info="$(show_info)" 
@@ -892,7 +902,7 @@ do
       echo "$info"
       echo "ALL your data has been dd_rescued !!"
       # show_bar
-      exit 1
+      exit 0
   fi
   
   if [ "$logcontent" != "" ] ;then

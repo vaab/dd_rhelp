@@ -1,3 +1,7 @@
+
+
+  x Add a feature that if a log file is not found and the dest file has data throws an error or a warning... or something
+
   x - close parts should be joined by testing gaps between them...
   x - BUG : show_bar doesn't correctly draw end of bar when a correct EOF is
  found. (done ?)

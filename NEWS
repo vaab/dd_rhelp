@@ -1,3 +1,8 @@
+Version 0.0.6
+        - Better error report
+        - BUGFIX :
+        - Strange behavior when you had 1 segments in the beginning
+        - MacOS X bugfixes
 Version 0.0.5
         - BUGFIX : 
         - Strange behavior when you had 2 segments in the beginning
