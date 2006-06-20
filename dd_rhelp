@@ -1,3 +1,29 @@
+#!/bin/bash
+
+# Begin dd_rhelp
+
+# Copyright (C) 2007 LAB Valentin <vaab@free.fr>
+#  
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#  
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#  
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#  
+
+
+#!- Library include
+. /etc/shlib
+#!- 
+
 
 # === VARS :
 #
@@ -10,62 +36,31 @@ max_bs=16384  # max block size (see dd_rescue's help)
 bar_lines=15  # nb of lines for bar drawing.
 
 
-# === CODE : 
-#
-#
+
+# Meta data description
+
+email="vaab@free.fr"
+version="0.1.1"
+state="beta"
+author="LAB Valentin"
 
 
-function get_path
-{
-    echo $(type -p $1) 
-}
 
-function require_exe 
-{
-    path=$(get_path $1)
+include common
 
-    if test -z "$path" ; then
-	print_error "requires '$1' to run... And it couldn't find it." >&2
-	exit 1
-    else
-	echo $path
-    fi
-}
+depends sed grep cat cut tr head touch wc bc tail stat
 
-# checks each required program and get their path.
-SED=$(require_exe sed) || exit 1
-GREP=$(require_exe grep) || exit 1
-CAT=$(require_exe cat) || exit 1
-CUT=$(require_exe cut) || exit 1
-TR=$(require_exe tr) || exit 1
-HEAD=$(require_exe head) || exit 1
-TAIL=$(require_exe tail) || exit 1
-TOUCH=$(require_exe touch) || exit 1
-WC=$(require_exe wc) || exit 1
-BC=$(require_exe bc) || exit 1
-tr=$(require_exe tr) || exit 1
-
-# usage string :
 usage="$exname {filename|device} {output-file} [{info}]
     or $exname --help
     or $exname --version"
 
-#
-# === Argument checking...
-#
-
-if [ "$#" == "1" ]; then
-
-    if [ "$1" == "--help" ]; then
-	print_usage
-	"${CAT}" <<EOF
-
+help="
 Options:
   --help            Print this message
   --version         Print version information
   {filename|device} The source file (it can be a block device)
   {output-file}     The destination file
-  info              Specifying "info" as third argument will display 
+  info              Specifying \"info\" as third argument will display 
                       summary informations on ongoing recovery and
 		      exit without taking any actions.
 
@@ -74,31 +69,22 @@ Note:
 dd_rescue log file (which is human readable). This log file is important
 as dd_rhelp feeds itself with its contents to manage correctly dd_rescue.
 
-Send bug reports, or comments to $email.
-Sorry for the shitty programming style.
-EOF
-	exit
-    fi
+  Without this log file, dd_rescue won't support resume capability.
 
-    if [ "$1" == "--version" ] ; then
-	"${CAT}" <<EOF
-$exname $version ($state)
-EOF
-	exit
-    fi
+Send bug reports, or comments to $email."
 
+
+
+#
+# === Argument checking...
+#
+
+gnu_options $*
+
+if [ "$#" -le "1" ]; then
     echo "Need 2 arguments..."
     print_usage
     exit 1
-fi
-
-
-
-if [ "$1" == "" ] 
-then
-    echo "Need 2 arguments..."
-    print_usage
-    exit 1;
 fi
 
 if [ "$3" != "" ] && [ "$3" != "info" ]
@@ -111,7 +97,7 @@ fi
 
 if [ "$3" == "info" ]
 then
- opt="info"
+  opt="info"
 fi
 
 infile="$1"
@@ -125,14 +111,22 @@ logfile="$2.log"
 
 if ! checkfile er "$infile"
 then
-    print_error "'$infile' is not accessible..."
-    exit 1;
+    print_error "'$infile' was not found."
+    exit 1
 fi
+
+
+#if ! LC_ALL=C "${stat}" -c %F "$infile" | "$grep" "special file" >/dev/null 2>&1 ; then
+#
+#   if [ "$(LC_ALL=C "${stat}" -c %s "$infile")" -le 100 ]; then
+#	print_error "dd_rhelp does not support input files < 100 bytes, and is quite useless in these cases."
+#    fi
+#fi
 
 if ! checkfile erw "$outfile" > /dev/null 2>&1
 then
 
-    if ! "${TOUCH}" "$outfile" > /dev/null 2>&1
+    if ! "${touch}" "$outfile" > /dev/null 2>&1
     then
 	print_error "'$outfile' is not accessible/could not be created..."
     else
@@ -141,12 +135,11 @@ then
     fi
 fi
 
-if ! checkfile erw "$logfile" > /dev/null 2>&1
-then
+if ! checkfile erw "$logfile" > /dev/null 2>&1 ;then
 
     if [ "$opt" == "info" ] && ! [ -r "$logfile" ]
     then
-	"${CAT}" <<EOF
+	"${cat}" <<EOF
 No info available since there's no readable '$logfile'.
 
 'info' option outputs information on current rescuing state by parsing this 
@@ -160,7 +153,7 @@ EOF
   
 
 
-    if ! "${TOUCH}" "$logfile" > /dev/null 2>&1
+    if ! "${touch}" "$logfile" > /dev/null 2>&1
     then
 	print_error "'$logfile' is not accessible/could not be created..."
     else
@@ -168,15 +161,15 @@ EOF
 	   echo "- file '$logfile' was successfully touched..."
     fi
 else
-    if [ "$opt" == "info" ] && [ "$(${CAT} "$logfile" | grep -v ^\$ )" == "" ] ; then
-	"${CAT}" <<EOF
+    if [ "$opt" == "info" ] && [ "$(${cat} "$logfile" | "${grep}" -v ^\$ )" == "" ] ; then
+	"${cat}" <<EOF
 No info available in '$logfile' : it is empty !
 
 'info' option outputs information on current rescuing state by parsing this 
 log file that would have been created by a precedent use of dd_rhelp or 
 dd_rescue. Since there's no content in log file, it has nothing to display.
 
-This could happens if you haven't launched a dd_rhelp before.
+This could happens if you haven't launched a $exname before.
 EOF
 	exit 0 ;
     fi
@@ -205,40 +198,51 @@ chunk=""
 
 
 
-function get_valid_dd_rescue
-{
+##
+# Fetch a valid dd_rescue version in PATH and in current dir.
+#
+#
+#
+#
+function get_valid_dd_rescue() {
 
     [ "$DEBUG" == "on" ] && echo "Finding dd_rescue binary" >&2
 
     path=$(get_path dd_rescue)
     
-    version=$("$path" -V 2>&1 | grep "dd_rescue Version" | cut -f 3 -d " " |
+    if test -z "$path"; then 
+	    echo -e "dd_rescue not found ! You must have dd_rescue in your PATH or in the current directory.">&2
+	    echo -e "Your PATH is : " >&2
+	    echo -e $PATH >&2
+    	exit 1;
+    fi
+    
+    version=$("$path" -V 2>&1 | "${grep}" "dd_rescue Version" | cut -f 3 -d " " |
     cut -f 1 -d ",")
     
     [ "$DEBUG" == "on" ] && echo -n "Trying '$path' : gives this version : '$version'..." >&2
 
-    if is_num "$version" && [ "$(bc_calc 2 "$version < 1.03")" == "0" ]
-    then
+    if is_num "$version" && [ "$(bc_calc 2 "$version < 1.03")" == "0" ]; then
         [ "$DEBUG" == "on" ] && echo "OK !" >&2
-	echo "$path"
-	return 0
+		echo "$path"
+		return 0
     else
-	[ "$DEBUG" == "on" ] && echo "BAD !" >&2
+		[ "$DEBUG" == "on" ] && echo "BAD !" >&2
     fi
 	
-    path="$(dirname $(type -ap "$0" | "${TAIL}" -1))/dd_rescue"
+    path="$(dirname $(type -ap "$0" | "${tail}" -n -1))/dd_rescue"
     
     if [ -x "$path" ] ;then
-	version=$("$path" -V 2>&1 | grep "dd_rescue Version" | cut -f 3 -d " " |
+		version=$("$path" -V 2>&1 | "${grep}" "dd_rescue Version" | cut -f 3 -d " " |
 	    cut -f 1 -d ",")
-	[ "$DEBUG" == "on" ] && echo -n "Trying '$path' : gives this version : '$version'..." >&2
-	if is_num "$version" && [ "$(bc_calc 2 "$version < 1.03")" == "0" ];then
-	    [ "$DEBUG" == "on" ] && echo "OK !" >&2
-	    echo "$path"
-	    return 0
-	else
-	    [ "$DEBUG" == "on" ] && echo "BAD !" >&2
-	fi
+		[ "$DEBUG" == "on" ] && echo -n "Trying '$path' : gives this version : '$version'..." >&2
+		if is_num "$version" && [ "$(bc_calc 2 "$version < 1.03")" == "0" ];then
+		    [ "$DEBUG" == "on" ] && echo "OK !" >&2
+		    echo "$path"
+		    return 0
+		else
+		    [ "$DEBUG" == "on" ] && echo "BAD !" >&2
+		fi
 	
     fi
     
@@ -246,37 +250,43 @@ function get_valid_dd_rescue
     exit 1    
 };
 
-# *** check whether $1 is num...
-# args : 
-#   $1 is string to be tested as num
-# returns errorlevel 0/1 depending on "$1"
-# std_out : nothing
+## 
+# Is $1 numeric ?
+#
+# @param $1 string Will be tested as numeric
+#
+# @return-errorlevel 0/1 if $1 is numeric 0 else 1
+# @return-stdout nothing
+#
 function is_num ()
 {
-    rest=$(echo $1 | sed 's/^\([0-9]\+\)\?\(\.\([0-9]\+\)\)\?$/X/g')
+    rest=$(echo $1 | "${sed}" 's/^\([0-9]\+\)\?\(\.\([0-9]\+\)\)\?$/X/g')
     
-    if [ -z "$(echo $1 | grep '^\([0-9]\+\)\?\(\.\([0-9]\+\)\)\?$')" ] ;then
+    if [ -z "$(echo $1 | "${grep}" '^\([0-9]\+\)\?\(\.\([0-9]\+\)\)\?$')" ] ;then
 	return 1
     else
 	return 0
     fi
 }
 
-# *** Handles BC conveniently
-# args :
-#   $1  is scale (number of digit in result after '.')
-#   $2+ is expression to be parsed by bc
-# returns : errorlevel 0 if no error occured
-# std_out : output of bc 
-# quits program with errorlevel 1 if error occured
-#  and output a debug string.
+## 
+# Handles BC conveniently
+# 
+# @param $1 integer scale (number of digit in result after '.')
+# @param $2+ string expression to be parsed by bc
+#
+# @return-errorlevel 0 if no error occured
+#                    1 if bc failed
+# @return-stdout string output of bc 
+#                       or debug string output
+#
 function bc_calc ()
 {
     scale=$1;
 
     if ! is_num "$scale" && test "$scale" != "no"; then
-	echo "*** bc_calc: Wrong first argument " >&2
-	echo "*** '$scale' is not a number." >&2
+	echo "bc_calc: Wrong first argument " >&2
+	echo "'$scale' is not a number." >&2
 	exit 1
     fi
 
@@ -284,14 +294,14 @@ function bc_calc ()
 
     shift
     exp=$(test "$scale" && echo "scale=$scale;";
-	test "$*" && echo "$*" || "${CAT}" - )
+	test "$*" && echo "$*" || "${cat}" - )
     
-    ans=$(echo "$exp" | "${BC}" 2>&1)
+    ans=$(echo "$exp" | "${bc}" 2>&1)
 
     if ! is_num "$ans"; then
-	echo "*** BC failed on this expression : " >&2
+	echo "bc failed on this expression : " >&2
 	echo "$exp" >&2
-	echo "*** BC returned :" >&2
+	echo "bc returned :" >&2
 	echo "$ans" >&2
 	exit 1;
     else
@@ -300,17 +310,20 @@ function bc_calc ()
     fi    
 }
 
+##
 # Go fetch EOF information in log to get a good approximation
+#
 # no args
-# Depends on content of logfile.
-# errorlevel allways 0
-# return nothing
+# Looks in logfile to compute EOF
+# @return-output nothing
+# @return-errorlevel allways 0
+#
 # changes $eof to "nothing" if no EOF is found,
 #              or 'nb' where nb is best EOF found
 function get_eof()
 {
 
-  eoflines="$("${CAT}" "$logfile" | "$tr" -d "\\r" | "$GREP" "$eofstring" | "$SED" 's/^dd_rescue: (info): .* (\([0-9\.]\+\)k): EOF$/\1/g')"
+  eoflines="$("${cat}" "$logfile" | "${tr}" -d "\\r" | "${grep}" "$eofstring" | "${sed}" 's/^dd_rescue: (info): .* (\([0-9\.]\+\)k): EOF$/\1/g')"
 
   eof="nothing"
 
@@ -329,23 +342,27 @@ function get_eof()
 }
 
 
+##
+# 
 # Will mark chunk as beiing completed
-# Depends on '$chunk', $chunk MUST be correctly generated !!
-# args :
-#   "nb1-nb2" with nb1<nb2
-# Modifies '$chunk'.
-function add_chunk()
-{
-    arg_start=$(echo "$1" | "${CUT}" -f 1 -d "-")
-    arg_stop=$(echo "$1" | "${CUT}" -f 2 -d "-")
+# Depends on valid '$chunk'
+#
+# @param $1 string in the form "nb1-nb2" with nb1<nb2
+#
+# warning : this function modifies '$chunk'.
+#
+function add_chunk() {
+
+    arg_start=$(echo "$1" | "${cut}" -f 1 -d "-")
+    arg_stop=$(echo "$1" | "${cut}" -f 2 -d "-")
 
     if ! is_num "$arg_start" ||
 	! is_num "$arg_stop"; then
-	print_error "*** add_chunk : invalid argument '$1' (is not correctly formatted as number:number)"
+	print_error "add_chunk : invalid argument '$1' (is not correctly formatted as number:number)"
     fi
 
     if test "$(bc_calc 1 "$arg_start < $arg_stop")" == "0"; then
-	print_error "*** add_chunk : invalid argument '$1' (these are not logical values)"
+	print_error "add_chunk : invalid argument '$1' (these are not logical values)"
     fi
 
     overlap="no"
@@ -357,11 +374,11 @@ function add_chunk()
     do
 
       # get first chunk already marked.
-      i="$(echo "$parsechunk" | "${HEAD}" -1 )"
+      i="$(echo "$parsechunk" | "${head}" -n 1 )"
 
       # pull the two bounds
-      i_start="$(echo "$i" | "${CUT}" -f 1 -d "-")"
-      i_stop="$(echo "$i" | "${CUT}" -f 2 -d "-")"
+      i_start="$(echo "$i" | "${cut}" -f 1 -d "-")"
+      i_stop="$(echo "$i" | "${cut}" -f 2 -d "-")"
 
 
       # new chunk begins after current chunk end ?
@@ -372,7 +389,7 @@ function add_chunk()
           # new chunk doesn't overlap with current chunk
 	  # Iterate, put current chunk in $goodchunk.
 	  goodchunk="$(echo -en "$goodchunk\n$i")"
-	  parsechunk="$(echo "$parsechunk" | "${TAIL}" +2)"
+	  parsechunk="$(echo "$parsechunk" | "${tail}" -n +2)"
 	  continue
       fi
 
@@ -408,7 +425,7 @@ function add_chunk()
       if [ "$as_int" == "0" ] && [ "$ae_int" == "0" ]
       then
 	  # we forget about current chunk, and iterate.
-	  parsechunk=$(echo "$parsechunk" | "${TAIL}" +2)
+	  parsechunk=$(echo "$parsechunk" | "${tail}" -n +2)
 	  continue
       fi
       
@@ -417,7 +434,7 @@ function add_chunk()
       then
 	  # grow new chunk to englobe current chunk.
 	  arg_stop=$i_stop
-	  parsechunk=$(echo "$parsechunk" | "${TAIL}" +2)
+	  parsechunk=$(echo "$parsechunk" | "${tail}" -n +2)
 
 	  break; # we can break because chunk are sorted.
       fi
@@ -427,7 +444,7 @@ function add_chunk()
       then
 	  # grow new chunk to englobe current chunk.
 	  arg_start=$i_start
-	  parsechunk=$(echo "$parsechunk" | "${TAIL}" +2)
+	  parsechunk=$(echo "$parsechunk" | "${tail}" -n +2)
 	  continue; # new chunk might overlap more chunks
       fi
 
@@ -438,7 +455,7 @@ function add_chunk()
     if [ "$overlap" == "no" ]
     then
 	chunk="$(echo -en "$goodchunk\n$arg_start-$arg_stop\n$parsechunk" |
-	 "$GREP" -v ^\$)"
+	 "${grep}" -v ^\$)"
     fi
 }
 
@@ -456,8 +473,8 @@ function get_next_pos()
 	# finding last's chunk end.
 
 	if test "$chunk" ;then
-	   last_chunk=$(echo "$chunk" | "${TAIL}" -1 )
-	   max_stop=$(echo "$last_chunk" | "${CUT}" -f 2 -d "-")
+	   last_chunk=$(echo "$chunk" | "${tail}" -n -1 )
+	   max_stop=$(echo "$last_chunk" | "${cut}" -f 2 -d "-")
         else		   
            max_stop=0
 	fi
@@ -478,7 +495,7 @@ function get_next_pos()
         do
 
 	  # collect start of chunk
-	  next=$(echo "$i" | "${CUT}" -f 1 -d "-")
+	  next=$(echo "$i" | "${cut}" -f 1 -d "-")
 
 	  if [ "$next" != "$start" ]
 	  then
@@ -489,7 +506,7 @@ function get_next_pos()
 		      pos=$start
 	      fi
 	  fi
-	  start=$(echo "$i" | "${CUT}" -f 2 -d "-")
+	  start=$(echo "$i" | "${cut}" -f 2 -d "-")
 	done
 
 	size="$(bc_calc 0 "(($size + 1) / 2)")"
@@ -505,7 +522,14 @@ function get_next_pos()
 function swallow_last_summary()
 {
   # last summary of log (4 lines output by printreport())
-  last_logcontent=$("${CAT}" "$logfile" | "$tr" -d "\\r" | "$GREP" "$string" -A 3 | "${TAIL}" -4)
+  last_logcontent=$("${cat}" "$logfile" | "$tr" -d "\r" | "${grep}" "$string" -A 3 | "${tail}" -n -4)
+
+  if test -z "$last_logcontent" ;then 
+	print_error "Didn't found any summary in log file. These info are normally produced by dd_rescue, and have to be parsed by dd_rhelp."
+  fi	
+
+  #echo last_logcontent: "$last_logcontent"
+
   process_log "$last_logcontent"
 
   get_eof
@@ -516,11 +540,10 @@ function swallow_last_summary()
 
 
 
-function get_last_chunk()
-{
+function get_last_chunk() {
     if test "$chunk"; then
-	last_chunk="$(echo "$chunk" | "${TAIL}" -1 )"
-	echo "$last_chunk" | "${CUT}" -f 2 -d "-"
+	last_chunk="$(echo "$chunk" | "${tail}" -n -1 )"
+	echo "$last_chunk" | "${cut}" -f 2 -d "-"
     else
 	echo 0
     fi
@@ -539,7 +562,7 @@ function show_bar()
     if [ "$eof" == "nothing" ] || test -z "$eof"
     then
 	eof_limit="$(get_last_chunk)"
-	next_pos="$(get_next_pos | "${CUT}" -f 1 -d ":")"
+	next_pos="$(get_next_pos | "${cut}" -f 1 -d ":")"
 	if [ "$(bc_calc 1 "$eof_limit < $next_pos")" == "1" ]; then
 	    eof_limit=$next_pos
 	fi
@@ -559,7 +582,7 @@ function show_bar()
 	c_res="$(bc_calc 10 "$eof_limit / $nb_stars")";
 
 	# next_pos is place of next jump in chars.
-	next_pos="$(bc_calc 0 "$(get_next_pos | "${CUT}" -f 1 -d ":") / $c_res")";    
+	next_pos="$(bc_calc 0 "$(get_next_pos | "${cut}" -f 1 -d ":") / $c_res")";    
         
 
 #	echo -n "[";
@@ -572,7 +595,7 @@ function show_bar()
 	for i in $chunk $eof_limit-$eof_limit
 	  do
 
-	  start=$(echo "$i" | "${CUT}" -f 1 -d "-")
+	  start=$(echo "$i" | "${cut}" -f 1 -d "-")
 	  
 	  if [ "$next" != "$start" ]
 	  then
@@ -644,7 +667,7 @@ function show_bar()
 		  done
 	      fi
 	  fi
-	  next=$(echo "$i" | "${CUT}" -f 2 -d "-")
+	  next=$(echo "$i" | "${cut}" -f 2 -d "-")
 	  
 	done
 
@@ -666,16 +689,16 @@ function show_bar()
 
 function show_info()
 {
-    echo "=== dd_rhelp INFO -" $(echo "$chunk" | "${WC}" -l) "chunks...";
-    jump=$(get_next_pos | "${CUT}" -f 1 -d ":")
-    [ "$jump" != "0" ] && echo -n "- Jump pos : $(get_next_pos | "${CUT}" -f 1 -d ":") "
+    echo "=== dd_rhelp INFO -" $(echo "$chunk" | "${wc}" -l) "chunks...";
+    jump=$(get_next_pos | "${cut}" -f 1 -d ":")
+    [ "$jump" != "0" ] && echo -n "- Jump pos : $(get_next_pos | "${cut}" -f 1 -d ":") "
     if [ "$eof" == "nothing" ]
     then
       echo "- max file size : no limit found"
     else
       echo "- max file size : $eof"
 
-      echo -en "- Biggest hole size : " "$(bc_calc 1 "$(get_next_pos | "${CUT}" -f 2 -d ":") * 2")" "k "
+      echo -en "- Biggest hole size : " "$(bc_calc 1 "$(get_next_pos | "${cut}" -f 2 -d ":") * 2")" "k "
     fi
 
   parsing="$logcontent"
@@ -685,12 +708,12 @@ function show_info()
 
   while test "$parsing" 
   do
-    firstline="$(echo "$parsing" | "${HEAD}" -1)"
-    parsing="$(echo "$parsing" | "${TAIL}" +2)"
+    firstline="$(echo "$parsing" | "${head}" -n 1)"
+    parsing="$(echo "$parsing" | "${tail}" -n +2)"
     
-    xferd="$(echo "$firstline" | "${CUT}" -f 2 -d ":" | "${CUT}" -f 2 -d "=")"
-    errxfer="$(echo "$firstline" | "${CUT}" -f 4 -d ":" | "${CUT}" -f 2 -d "=")"
-    succxfer="$(echo "$firstline" | "${CUT}" -f 5 -d ":" | "${CUT}" -f 2 -d "=")"
+    xferd="$(echo "$firstline" | "${cut}" -f 2 -d ":" | "${cut}" -f 2 -d "=")"
+    errxfer="$(echo "$firstline" | "${cut}" -f 4 -d ":" | "${cut}" -f 2 -d "=")"
+    succxfer="$(echo "$firstline" | "${cut}" -f 5 -d ":" | "${cut}" -f 2 -d "=")"
 
     total_errxfer="$(bc_calc 1 "$total_errxfer + $errxfer")"
     total_succxfer="$(bc_calc 1 "$total_succxfer + $succxfer")"
@@ -705,13 +728,13 @@ function show_info()
     next=0
     for i in $chunk
     do
-      next=$(echo "$i" | "${CUT}" -f 1 -d "-")
+      next=$(echo "$i" | "${cut}" -f 1 -d "-")
       if [ "$next" != "$start" ]
       then
 	  cursize="$(bc_calc 1 "$next - $start")"
 	  size="$(bc_calc 1 "$size + $cursize")"
       fi
-      start=$(echo "$i" | "${CUT}" -f 2 -d "-")
+      start=$(echo "$i" | "${cut}" -f 2 -d "-")
     done
     echo -e "- total holes : ${size}k"
 
@@ -741,30 +764,34 @@ function show_info()
 }
 
 
-function process_log()
-{
-    data="$1"
+function process_log() {
 
-    test -z data && return 0
+
+    data="$1"
+    #echo "DATA: $data"
+
+    test -z "$data" && return 0
 	
     [ "$DEBUG" == "on" ] && echo -n "- cleaning data ["
-    data=$(echo "$data" | "$GREP" -v "xferd: \+0.0k$")
+    # XXXVaab : bad if file is less that 0.1Ko length
+    data=$(echo "$data" | "${grep}" -v "xferd: \+0.0k$")
     [ "$DEBUG" == "on" ] && echo -n "."
-    data=$(echo "$data" | "$GREP" "$infoline" -A 1 | "${CUT}" -c 12-)
+    data=$(echo "$data" | "${grep}" "$infoline" -A 1 | "${cut}" -c 12-)
     [ "$DEBUG" == "on" ] && echo -n "."
-    data=$(echo "$data" | "$SED" 's/^(info): ipos: \+//g')
+    data=$(echo "$data" | "${sed}" 's/^(info): ipos: \+//g')
     [ "$DEBUG" == "on" ] && echo -n "."
-    data=$(echo "$data" | "$SED" 's/^ \+errs: \+/NR:/g')
+    data=$(echo "$data" | "${sed}" 's/^ \+errs: \+/NR:/g')
     [ "$DEBUG" == "on" ] && echo -n "."
-    data=$(echo "$data" | "$SED" 's/^ \+- \+errs: \+/RE:/g')
+
+    data=$(echo "$data" | "${sed}" 's/^ \+- \+errs: \+/RE:/g')
     [ "$DEBUG" == "on" ] && echo -n "."
-    data=$(echo "$data" | "$SED" 's/^\([0-9\.]\+\)k, opos:.\+xferd: \+\([0-9\.]\+\)k$/ipos=\1:xferd=\2:/g')
+    data=$(echo "$data" | "${sed}" 's/^\([0-9\.]\+\)k, opos:.\+xferd: \+\([0-9\.]\+\)k$/ipos=\1:xferd=\2:/g')
     [ "$DEBUG" == "on" ] && echo -n "."
-    data=$(echo "$data" | "$SED" 's/^\(RE\|NR\):[0-9]\+, errxfer: \+\([0-9\.]\+\)k, succxfer: \+\([0-9\.]\+\)k$/\1:errxfer=\2:succxfer=\3;/g')
+    data=$(echo "$data" | "${sed}" 's/^\(RE\|NR\):[0-9]\+, errxfer: \+\([0-9\.]\+\)k, succxfer: \+\([0-9\.]\+\)k$/\1:errxfer=\2:succxfer=\3;/g')
     [ "$DEBUG" == "on" ] && echo -n "."
-    data=$(echo "$data" | "${TR}" -d "\n")
+    data=$(echo "$data" | "${tr}" -d "\n")
     [ "$DEBUG" == "on" ] && echo -n "."
-    data=$(echo "$data" | "${TR}" ";" "\n")
+    data=$(echo "$data" | "${tr}" ";" "\n")
     [ "$DEBUG" == "on" ] && echo ".]"
     
     # All info now take one line per entry, and field are separated by ":"
@@ -777,14 +804,16 @@ function process_log()
     # chunk=""
     
     while test "$parsing" ;do
-	firstline="$(echo "$parsing" | "${HEAD}" -1)"
-	parsing="$(echo "$parsing" | "${TAIL}" +2)"
+	#echo "parsing: $parsing"
+	firstline="$(echo "$parsing" | "${head}" -n 1)"
+	#echo "firstline: $firstline"
+	parsing="$(echo "$parsing" | "${tail}" -n +2)"
 	
-	ipos="$(echo $firstline | "${CUT}" -f 1 -d ":" | "${CUT}" -f 2 -d "=")"
-	xferd="$(echo $firstline | "${CUT}" -f 2 -d ":" | "${CUT}" -f 2 -d "=")"
-	rev="$(echo $firstline | "${CUT}" -f 3 -d ":")"
-	errxfer="$(echo $firstline | "${CUT}" -f 4 -d ":" | "${CUT}" -f 2 -d "=")"
-	succxfer="$(echo $firstline | "${CUT}" -f 5 -d ":" | "${CUT}" -f 2 -d "=")"
+	ipos="$(echo $firstline | "${cut}" -f 1 -d ":" | "${cut}" -f 2 -d "=")"
+	xferd="$(echo $firstline | "${cut}" -f 2 -d ":" | "${cut}" -f 2 -d "=")"
+	rev="$(echo $firstline | "${cut}" -f 3 -d ":")"
+	errxfer="$(echo $firstline | "${cut}" -f 4 -d ":" | "${cut}" -f 2 -d "=")"
+	succxfer="$(echo $firstline | "${cut}" -f 5 -d ":" | "${cut}" -f 2 -d "=")"
 	
 	if [ "$rev" == "RE" ] ; then
 	    start="$ipos"
@@ -809,33 +838,39 @@ function process_log()
     fi
 }
 
-function load_log()
-{
+
+##
+# Load log info in variables
 #
-# loading into memory Summary info found in log file...
 #
-    # line number of last save_log entry...
-    lnb_save=$("${CAT}" -n "$logfile" | "$tr" -d "\\r" | grep "chunk:" -A 2 | "${TAIL}" -3)
-    
+#
+#
+function load_log() {
+
+    # Complete last save log entry
+    lnb_save=$("${cat}" -n "$logfile" | "${tr}" -d "\\r" | "${grep}" "chunk:" -A 2 | "${tail}" -n -3)
 
     if test "$lnb_save" ;then
-	lnb_save=$(echo $lnb_save | "${HEAD}" -1 | cut -f 1 -d " ")
 
-	end_log="$(cat "$logfile" | "$tr" -d "\\r" | "${TAIL}" "+$lnb_save")"
+	# Get Chunk info in Last log entry
+	lnb_save=$(echo $lnb_save | "${head}" -n 1 | cut -f 1 -d " ")
 
-	last_lines=$(echo "$end_log" | grep "chunk:" -A 2 | "${TAIL}" -3)
+
+	end_log="$(cat "$logfile" | "$tr" -d "\\r" | "${tail}" -n "+$lnb_save")"
+
+	last_lines=$(echo "$end_log" | "${grep}" "chunk:" -A 2 | "${tail}" -n -3)
 	
-	log=$(echo "$last_lines" | "$GREP" "chunk" | "${TAIL}" -1 )
-	log1=$(echo "$last_lines" | "$GREP" "logcontent" | "${TAIL}" -1 )
-	log2=$(echo "$last_lines" | "$GREP" "eof" | "${TAIL}" -1 )
+	log=$(echo "$last_lines" | "${grep}" "chunk" | "${tail}" -n -1 )
+	log1=$(echo "$last_lines" | "${grep}" "logcontent" | "${tail}" -n -1 )
+	log2=$(echo "$last_lines" | "${grep}" "eof" | "${tail}" -n -1 )
 	
 	if test "$log" && test "$log1" && test "$log2" ;then
-	    chunk="$(echo "$log" | "${CUT}" -f 2- -d ":" | "${TR}" ":" "\n")"
+	    chunk="$(echo "$log" | "${cut}" -f 2- -d ":" | "${tr}" ":" "\n")"
 
-	    logcontent="$(echo "$log1" | "${CUT}" -f 2- -d : | "${TR}" ";" "\n")"
-	    eof="$(echo "$log2" | "${CUT}" -f 2 -d ":")"
+	    logcontent="$(echo "$log1" | "${cut}" -f 2- -d : | "${tr}" ";" "\n")"
+	    eof="$(echo "$log2" | "${cut}" -f 2 -d ":")"
 	    
-	    log=$(echo "$end_log" | "$GREP" "$string" -A 3 )
+	    log=$(echo "$end_log" | "${grep}" "$string" -A 3 )
 	    
 	    process_log "$log"
 	    return 0
@@ -846,7 +881,7 @@ function load_log()
     fi
 	
     # select all summary info of dd_rescue
-    log=$("${CAT}" "$logfile" | "$tr" -d "\\r" | "$GREP" "$string" -A 3 )
+    log=$("${cat}" "$logfile" | "$tr" -d "\\r" | "${grep}" "$string" -A 3 )
 
     # Set EOF with log.
     get_eof
@@ -856,11 +891,10 @@ function load_log()
 
 }
 
-function save_log()
-{
+function save_log() {
     echo "=== COMPUTED VERSION OF LOG :" >> "$logfile"
-    echo "chunk:$(echo -n "$chunk" | "${TR}" "\n" : )" >> "$logfile"
-    echo "logcontent:$(echo -n "$logcontent" | "${TR}" "\n" ";" )" >> "$logfile"
+    echo "chunk:$(echo -n "$chunk" | "${tr}" "\n" : )" >> "$logfile"
+    echo "logcontent:$(echo -n "$logcontent" | "${tr}" "\n" ";" )" >> "$logfile"
     echo "eof:$eof" >> "$logfile"
 }
 
@@ -868,9 +902,11 @@ function save_log()
 
 # === beginning of real code
 
+#echo load
 load_log
 
 # Save computed version of log for next time.
+#echo save
 save_log
 
 if [ "$opt" == "info" ] && test -z "$logcontent"
@@ -879,28 +915,30 @@ then
     exit 0;
 fi
 
-if [ "$opt" != "info" ];then
-    DD_RESCUE="$(get_valid_dd_rescue)"
-    [ "$?" != "0" ] && exit 1
-else
-    echo "$(show_info)"
-    if [ "$?" == "0" ] ; then 
-       echo "ALL your data has been dd_rescued !!"
-    else 
-       show_bar
+
+info="$(show_info)"
+if [ "$?" == "0" ] ; then 
+    [ "$opt" == "info" ] && echo "$info"
+    echo "All your data has been dd_rescued."
+else 
+    if [ "$opt" == "info" ];then
+	show_bar
     fi
-    exit 0
 fi
 
-while [ "$(echo "$chunk" | "${WC}" -l)" != "1" ] ||
+[ "$opt" == "info" ] && exit 0
+
+DD_RESCUE="$(get_valid_dd_rescue)" || exit 1;
+
+while [ "$(echo "$chunk" | "${wc}" -l)" -gt "1" ] ||
       [ "$(get_last_chunk)" != "$eof" ] ||
-      [ "$eof" == "nothing" ]
-do
+      [ "$eof" == "nothing" ]; do
 
   info="$(show_info)" 
   if [ "$?" == "0" ] ; then 
       echo "$info"
-      echo "ALL your data has been dd_rescued !!"
+      echo -n "All your data has been dd_rescued !! Please note that it doesn't mean that it has been RECOVERED : dd_rescue parsed all your drive and copied what could be copied. It's fairly sure that you cannot get more from your drive. You should now use with caution a filesystem recovering tool specific to your filesystem type to rebuild meta-data information. Then you should be able to mount partitions if needed."
+      echo 
       # show_bar
       exit 0
   fi
@@ -915,8 +953,8 @@ do
  \n$chunk\n"
   [ "$opt" == "info" ] && exit 1;
 
-  next_pos="$(get_next_pos | "${CUT}" -f 1 -d ":")k"
-  count="$(get_next_pos | "${CUT}" -f 2 -d ":")k"
+  next_pos="$(get_next_pos | "${cut}" -f 1 -d ":")k"
+  count="$(get_next_pos | "${cut}" -f 2 -d ":")k"
 
 
   if [ "$next_pos" != "0k" ]
@@ -941,3 +979,5 @@ do
   fi
  
 done
+
+# End dd_rhelp

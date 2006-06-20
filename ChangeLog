@@ -1,3 +1,9 @@
+2007-06-25  LAB Valentin  <vaab@free.fr>
+
+	* Fixed "tail" calls for obsolete "+X" argument.
+	* removed ./configure && make && make install build process
+	* Release of 0.1.1
+
 2004-06-02  LAB Valentin  <vaab@free.fr>
 
         * src/dd_rhelp-sh (main): fixed a bug, and removed "0d" caracters when

@@ -1,14 +1,16 @@
-Authors of PACKAGE
+Authors of DD_RHELP
 
 The following contributions warranted legal paper exchanges
 with Valentin LAB
+
+
 
 Also see files ChangeLog and THANKS :
 
 Valentin LAB:
 	entire files -> dd_rhelp.sh include/*
-	modifications -> dd_rescue/dd_rescue.c
 
-Kurt Garloff:
-	entire files -> dd_rescue/*
+
+THANKS to Kurt Garloff for dd_rescue.
+
 

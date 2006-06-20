@@ -29,40 +29,88 @@ As stated by Kurt Garloff for his dd_rescue program :
 
 As it is for dd_rhelp, which has saved me YEARS on my hard drive.
 
+Important note :
+----------------
+
+For some times, dd_rhelp was the only (AFAIK) tool that did the job it accomplish, but since now a bunch of years, Antonio Diaz did write a ideal replacement for my tool : GNU ddrescue. 
+Yes, this is not very clever to have called a tool the same name that 'dd_rescue' (catch the subtle difference ?) from Kurt Garloff, but it seems that it was 
+done by intent as we warned Antonio Diaz from the fact it would mess things.
+Nevertheless, I really encourage you to use this replacement tool if it works for you (and it should be the case). Why ? Understand first what we are comparing : 
+- dd_rhelp (in bash script) + dd_rescue (in C) in one hand
+- ddrescue (in C) in the other.
+
+dd_rhelp was meant as a quick hack to implement what dd_rescue didn't do, and what (AFAIK) couldn't be done at that time, with any soft. 
+
+It could be some cases where ddrescue won't work, and this is the major reason why I keep maintaining dd_rhelp. It is important to tell me and Antonio Diaz when these cases occur.
+
+Now that you are enlightened, you are free to use dd_rhelp.
+
 Why do people want to use dd_rhelp ?
 -----------------------------------
 
-Well, you do not WANT to use dd_rhelp. I hope you'll never have to use it.
+Well, you do not WANT to use dd_rhelp. I hope you'll never HAVE TO use it.
 
-Basically, if you have bad sector problems you'll have several solutions 
-depending on the filesystem, the partition table, and what is accessible...
+Basically, if you have bad sector corrupting your filesystem you'll have 
+several solutions depending on the filesystem itslef, the partition table, 
+and what remains accessible...
 
-Sometimes, you'll have to copy all the valid partition data in a file on
-a healthier filesystem. Then mount the file with loopback device to rebuild 
-the damaged filesystem information. This is where dd_rhelp and dd_rescue are 
-meant to be used.
+In some recovering process, as a first stage, you'll need to secure all the 
+remaining data of your disk (or partition) in a file on a healthier filesystem.
+Often, next operations are to mount the file with loopback device (for example) 
+to rebuild the damaged filesystem information. Once the filesystem meta-data
+has been reconstructed on the healthier filesystem, chances are that you'll be
+able to access files. These could then be in various states depending of how 
+they have been affected by the damages. Possible file states are ranging from 
+completely recovered without any further work, to lost, damaged, scrambled, 
+and often anonymously collected in your filesystem lost-and-found repository...
 
-dd_rescue is a great program, but using it sometimes can be time consuming as
-it won't stop on errors but will take long to get over them.
+dd_rhelp and dd_rescue are meant to be in the very first phase only : securing
+your remaining data into a another file.
+
+dd_rescue which has been created by Kurt Garloff, is a great program. And could
+already help you without dd_rhelp. But in some case, like disks cluttered with
+bad sectors, it can be time consuming to use for 2 main reasons : 
+
+1 - it does straight recovery, and thus can spend months making it's path in
+a solid bunch of bad sectors before rescuing hole portions of perfectly sain
+data hidden just after.
+
+2 - if you decide to manoeuver dd_rescue to stop him when he's bumping in large
+sequences of bad sectors and try to start it from spots to spots in normal or
+reverse direction (as dd_rescue options allows this), then this can require
+a lot of YOUR time.
+
+It is where dd_rhelp comes to help : it is a wrapper for dd_rescue. This means
+it'll call it with various arguments to change it's start position or the
+direction of the scanning process. It'll guide dd_rescue into a new behavior 
+which will lead to rescuing much more data in the beginning of the process all
+over the disk. 
+
+Why do people want to use dd_rhelp ? (v2)
+----------------------------------------
+
 This can really take a long time if you have much bad sectors. (and I had this
 problem).
 
 As bad sectors tends to be in large groups and these groups seems to tend to 
 be dispatched on drive, and if you just launch dd_rescue on the beginning of
 your drive and there is a large group of bad sectors coming next, you could 
-be waiting for years ! (and without rescuing any data). And you cannot know
-if there is any valid data to rescue AFTER this chunk and how long it will
-take...
+be waiting for years ! (and without rescuing any data). And you cannot 
+answer these questions : 
+- Is there any valid data to rescue AFTER this chunk ?
+- How big is this chunk ?
+- When will I get answer to these two first question ?
 
-So your solution with dd_rescue is to jump ahead randomly and try to copy from
-a chosen offset. Then you could again fall on a group of bad sectors...
+So your solution with dd_rescue is to stop dd_rescue, and "jump" ahead randomly 
+and try to copy from a chosen offset. Then you could again fall on a group of 
+bad sectors...
 and then you should stop dd_rescue and jump somewhere else on your drive. 
 This behavior involves the user's constant presence (you !).
 
 The idea of the dd_rhelp shell script is to do this job : launching
-dd_rescue for you on the disc while trying to get the max amount of data 
-out of your disc in a minimum of time. It'll be jumping over bad blocks, 
-using the reverse copy option of dd_rescue to pin out bad_sector group and 
+dd_rescue for you on the disk while trying to get the max amount of data 
+out of your disk in a minimum of time. It'll be jumping over bad blocks, 
+using the reverse copy option of dd_rescue to pin out bad sector group and 
 rescue as much data as you could have rescued manualy.
 
 Why use dd_rhelp and not dd_rescue ?
@@ -72,15 +120,17 @@ This is a good question. dd_rhelp uses dd_rescue to compute a recovery path thro
 
 Why wouldn't you want a full recovery ? because a considerable amount of time is taken to try to rescue badsectors. This amount of time can be mesured in days, month, years, depending on your device capacity and its defectiveness. You might not want to spend this time knowing that 99 percent of this time will be taken to look at badsector and won't lead to any more data recovering...
 
-dd_rhelp shifts this useless waiting time to the end. Using dd_rescue strait throughout your device make your waiting time dependent on the badsector distribution. 
+dd_rhelp shifts this useless waiting time to the end of the process. Using dd_rescue straight throughout your device make waiting time dependent on the badsector distribution. 
 
 Think about dd_rescue standalone if you only intend (and can afford) to wait until a full dd_rescue scan. dd_rhelp optimizes only the order in which this full scan will occur to focus on recovery of what will be recoverable in first. So in the end, launching dd_rhelp for a full scan will take exactly the same time dd_rescue would have taken plus a considerable time which correspond to the overhead of calculating its path.
 
 How should I use it ?      
 ---------------------
 
-First build it from sources, with "./configure && make" 
-Optionnaly run "make install"...
+Since version 0.1.0, you won't need to do this step : 
+
+> First build it from sources, with "./configure && make" 
+> Optionnaly run "make install"...
 
 This shell script is very basic and not well written, but it supports the 
 "--help" and "--version" of GNU Coding Standard. It should be quite clear.
@@ -100,7 +150,8 @@ work :
 How do I install this package ?
 -------------------------------
 
-basic : "./configure && make && make install" should do the trick.
+Since 0.1.0, dd_rhelp is directly usable (you can copy it to a directory in 
+your path, or use it directly out of the box).
 
 How does it work ?
 -------------------
@@ -108,36 +159,45 @@ How does it work ?
 dd_rhelp uses log files made by dd_rescue. Precisely, it searches for the
 "Summary report" that dd_rescue prints when its job is over. 
 
-1 - dd_rhelp creates hitself an internal representation of what has been
+1 - dd_rhelp creates itself an internal representation of what has been
 parsed with dd_rescue.
 2 - It'll find the greatest part of the disk that hasn't been tested and will 
-launch dd_rescue from the middle of this part backwards and forwards until it 
+launch dd_rescue from the middle of this part backwards, then forwards until it 
 rescues without error all data, or until it falls on 5 consecutive read errors.
 3 - go back to step 1 unless everything has been dd_rescued...
 
 Requirements ?
 --------------
 
-If you can ./configure && make... then it should execute fine.
 It worked fine for me (Home made distrib) on big harddrives (partitions of 
-15 Gigs). Received positive feedbacks on large partition (60 Gigs and 200 Gigs), and it should only be limited by the linux kernel limitation. Though the bash script could be longuer to compute next position in very large disk with lots of
-bad sectors scatered all over your disk.
+15 Gigs). Received positive feedbacks on large partition (60 Gigs and 
+200 Gigs), and it should only be limited by the linux kernel limitation. Though
+the bash script could be longer to compute next position in very large disk
+with lots of bad sectors scatered all over your disk.
 
-It worked on Debian, and on a Knoppix CD. Tested it with a 1.44M diskette with
-badsectors and it worked fine. (This was for version 0.0.2)
+It worked on Debian, and on a Knoppix CD. After each release, I test it on
+a knoppix with a 1.44M diskette with badsectors or damaged CD-ROM/DVD-ROM.
 
-Darwin/MacOSX should be supported with GNU sed, GNU bc installed. Has been working since 0.0.6 .
-
-Tested 0.0.4 on : (with a 1.44 diskette with badsectors)
-- Sys Rescue CD (http://www.sysresccd.org) 
-	* Note : you'll need to "make" it somewhere else.
-- KNOPPIX 3.3 (http://www.knoppix.com)
-	* Note : perfect, you can configure && make and download dd_rescue 
-	v1.03 and start recovery.
+Darwin/MacOSX should be supported with GNU sed, GNU bc installed. Has been 
+working since 0.0.6 . This support is erratical, so more feedback are
+appreciated.
 
 If you have any other experiences of dd_rhelp, please let me know.
 
 IMPORTANT NOTE :
 
 This shell script needs version >= 1.03 of dd_rescue !!!!
-It won't detect your version in "./configure && make" but at runtime !
+
+I want to look in the code, but it's really complicated
+-------------------------------------------------------
+
+Yes, I know. This is a big bash script because I rely on a personnal
+shell library which finishes included nearly completely at the
+beginning of the script.
+
+Feel free to modify, give hint or else.
+
+We are all knowing that a quick C program should be better. So feel free
+to create it ! And this is what Antonio Diaz did for its "GNU ddrescue" program, make sure to have a look to it before using dd_rhelp.
+
+

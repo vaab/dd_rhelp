@@ -8,7 +8,7 @@
   x - found which is the correct EOF in log. (done ?)
   x - Tests and ensures that nb_err is greater than 1.
   x - First time it is launched, checks right and left limits of chunks.
-  x - Make a estimation time of end. Worse and good.
+  x - Make a estimation time of end. 
   x - Test if dd_rescue is the good version : the one that makes a summary 
  even in maxerr mode (partly done...)
   x - less but clearer output if possible (ansi color ?)

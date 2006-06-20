@@ -1,11 +1,26 @@
-Copyright 1994, 1995, 1996, 1999, 2000, 2001, 2002 Free Software
+Copyright 1994, 1995, 1996, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software
 Foundation, Inc.
 
    This file is free documentation; the Free Software Foundation gives
 unlimited permission to copy, distribute and modify it.
 
-Basic Installation
-==================
+   Some additions are from Valentin LAB for dd_rhelp.
+
+Installation (for dd_rhelp > 0.1.0)
+===================================
+
+   Installation process have been greatly simplified with version 0.1.0 as
+it as been completely removed ! Removing the previous hassle of the 
+./configure && make && make install normally reserved for
+languages that requires compilation.
+
+   So for version superior to 0.1.0, installation is only a mean of a direct
+use of dd_rhelp, or a simple "cp dd_rhelp /your/bin/path".
+
+   For older release : please look at next sections. 
+
+Basic Installation (only for dd_rhelp 0.0.x)
+============================================
 
    These are generic installation instructions.
 
