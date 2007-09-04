@@ -29,18 +29,26 @@
 #
 # Feel free to change them.
 
-max_err=5     # number of error to start a new chunk
-              # DO NOT SET TO "1"...
+max_err_min=5     # number of contiguous error needed to jump to a new location
+                  #  DO NOT SET TO "1"...
+
+max_chunks=300   # number of maximum chunks allowed
+min_chunks=15    # number of minimum chunks to start modifying max_err
+
+
 min_bs=512    # min block size (see dd_rescue's help)
 max_bs=16384  # max block size (see dd_rescue's help)
 bar_lines=15  # nb of lines for bar drawing.
 
+default_log_paths=". ~ /tmp" # if default log path is in a small filesystem
+                             #   or a virtual filesystem (as /dev or /proc)
+                             #   then these paths will be tried.
 
 
 # Meta data description
 
 email="vaab@free.fr"
-version="0.1.1"
+version="0.1.2"
 state="beta"
 author="LAB Valentin"
 
@@ -48,7 +56,7 @@ author="LAB Valentin"
 
 include common
 
-depends sed grep cat cut tr head touch wc bc tail stat
+depends sed grep cat cut tr head touch wc bc tail stat dirname basename df
 
 usage="$exname {filename|device} {output-file} [{info}]
     or $exname --help
@@ -74,6 +82,66 @@ as dd_rhelp feeds itself with its contents to manage correctly dd_rescue.
 Send bug reports, or comments to $email."
 
 
+## 
+# Is $1 numeric ?
+#
+# @param $1 string Will be tested as numeric
+#
+# @return-errorlevel 0/1 if $1 is numeric 0 else 1
+# @return-stdout nothing
+#
+function is_num ()
+{
+    rest=$(echo $1 | "${sed}" 's/^\([0-9]\+\)\?\(\.\([0-9]\+\)\)\?$/X/g')
+    
+    if [ -z "$(echo $1 | "${grep}" '^\([0-9]\+\)\?\(\.\([0-9]\+\)\)\?$')" ] ;then
+	return 1
+    else
+	return 0
+    fi
+}
+
+## 
+# Handles BC conveniently
+# 
+# @param $1 integer scale (number of digit in result after '.')
+# @param $2+ string expression to be parsed by bc
+#
+# @return-errorlevel 0 if no error occured
+#                    1 if bc failed
+# @return-stdout string output of bc 
+#                       or debug string output
+#
+function bc_calc ()
+{
+    scale=$1;
+
+    if ! is_num "$scale" && test "$scale" != "no"; then
+	echo "bc_calc: Wrong first argument " >&2
+	echo "'$scale' is not a number." >&2
+	exit 1
+    fi
+
+    test "$scale" == "no" && scale=""
+
+    shift
+    exp=$(test "$scale" && echo "scale=$scale;";
+	test "$*" && echo "$*" || "${cat}" - )
+    
+    ans=$(echo "$exp" | "${bc}" 2>&1)
+
+    if ! is_num "$ans"; then
+	echo "bc failed on this expression : " >&2
+	echo "$exp" >&2
+	echo "bc returned :" >&2
+	echo "$ans" >&2
+	exit 1;
+    else
+	echo "$ans"
+	return 0
+    fi    
+}
+
 
 #
 # === Argument checking...
@@ -87,8 +155,19 @@ if [ "$#" -le "1" ]; then
     exit 1
 fi
 
-if [ "$3" != "" ] && [ "$3" != "info" ]
-then
+if test -z "$1"; then
+    print_error "First argument is empty !!";
+fi
+
+if test -z "$2"; then
+    print_error "Second argument is empty !!";
+fi
+
+if [ "$#" == "3" ] &&  test -z "$3"; then
+    print_error "third argument is empty !!";
+fi
+
+if [ "$3" != "" ] && [ "$3" != "info" ]; then
     shift;shift
     echo "too much argument... : '$*' is beyond limit. "
     print_usage
@@ -109,9 +188,9 @@ logfile="$2.log"
 #
 
 
-if ! checkfile er "$infile"
-then
-    print_error "'$infile' was not found."
+if ! checkfile er "$infile"; then
+    # No need of msg, checkfile will output them
+    print_error "Please specify a usable file as first argument."
     exit 1
 fi
 
@@ -135,6 +214,74 @@ then
     fi
 fi
 
+
+if ! checkfile edr "$("$dirname" "$logfile")" ; then
+    # No need of msg, checkfile will output them
+    exit 1
+fi
+
+## XXXVaab : should check available disk space ...
+
+function check_logfilediskspace() {
+    logfile_diskspace="$("$df" --sync -k "$("$dirname" "$logfile")" | "$tail" -n 1 |  "$sed" "s/ \+/ /g" | "$cut" -f 2 -d " ")"
+    if [ "$(bc_calc 2 "$logfile_diskspace < 10000")" == "1" ]; then
+	print_warning "The available disk space on the location \
+'$(dirname "$logfile")' seems to be less than 10 MB which could \
+not be enough to store all information the log file will need. \
+$exname won't use '$logfile' as log file, but instead will \
+use another location."
+	return 1
+    fi
+}
+
+function check_logfilefs() {
+    logfile_fs="$("$stat" -f "$("$dirname" "$logfile")" -c %T)"
+    if [ "$logfile_fs" == "tmpfs" ] ||
+	[ "$logfile_fs" == "usbfs" ] ||
+	[ "$logfile_fs" == "devpts" ] ||
+	[ "$logfile_fs" == "proc" ] ||
+	[ "$logfile_fs" == "sysfs" ]; then
+	print_warning "Your default logging directory seems to be \
+'$(dirname "$logfile")' which is on a '$logfile_fs' filesystem. \
+As we shouldn't mess with log files in these type of filesystem \
+$exname won't use '$logfile' as log file, but instead will \
+use another location."
+	return 1
+    fi
+}
+
+
+for i in "$("$dirname" "$2")" $default_log_paths __end__; do 
+
+    if [ "$i" == "__end__" ]; then
+	print_error "Could not find any location that could hold conveniently the log file... "
+	exit 1
+    fi 
+    echo -n ">> Probing logfile location : "
+    logfile="$(eval "echo $i")/$("$basename" "$logfile" .log).log"
+    echo "'$logfile'";
+
+    check_logfilefs || continue
+    check_logfilediskspace || continue
+    if checkfile e "$logfile" > /dev/null 2>&1 ; then
+	echo "Log file exists already."
+	if ! checkfile r "$logfile" ;then
+	    continue
+	fi
+
+	if ! "${touch}" "$logfile" > /dev/null 2>&1 ;then
+	    print_warning "'$logfile' is not writable... Only 'info' option will be \
+permitted. No parsing will be allowed. Please solve the permissions issue, or remove this logfile from '$logfile' to start a brand new parsing of your device."
+	fi
+
+    fi
+
+    break;
+done
+
+echo ">> Found convenient logfile location '$logfile'"
+
+
 if ! checkfile erw "$logfile" > /dev/null 2>&1 ;then
 
     if [ "$opt" == "info" ] && ! [ -r "$logfile" ]
@@ -146,7 +293,7 @@ No info available since there's no readable '$logfile'.
 log file that would have been created by a precedent use of dd_rhelp or 
 dd_rescue. Since there's no log file, it has nothing to display.
 
-This happens if you haven't launched a dd_rhelp before.
+This happens if you haven't launched a $exname before.
 EOF
 	exit 0 ;
     fi
@@ -160,7 +307,9 @@ EOF
 	[ "$DEBUG" == "on" ] && 
 	   echo "- file '$logfile' was successfully touched..."
     fi
+
 else
+
     if [ "$opt" == "info" ] && [ "$(${cat} "$logfile" | "${grep}" -v ^\$ )" == "" ] ; then
 	"${cat}" <<EOF
 No info available in '$logfile' : it is empty !
@@ -250,65 +399,7 @@ function get_valid_dd_rescue() {
     exit 1    
 };
 
-## 
-# Is $1 numeric ?
-#
-# @param $1 string Will be tested as numeric
-#
-# @return-errorlevel 0/1 if $1 is numeric 0 else 1
-# @return-stdout nothing
-#
-function is_num ()
-{
-    rest=$(echo $1 | "${sed}" 's/^\([0-9]\+\)\?\(\.\([0-9]\+\)\)\?$/X/g')
-    
-    if [ -z "$(echo $1 | "${grep}" '^\([0-9]\+\)\?\(\.\([0-9]\+\)\)\?$')" ] ;then
-	return 1
-    else
-	return 0
-    fi
-}
 
-## 
-# Handles BC conveniently
-# 
-# @param $1 integer scale (number of digit in result after '.')
-# @param $2+ string expression to be parsed by bc
-#
-# @return-errorlevel 0 if no error occured
-#                    1 if bc failed
-# @return-stdout string output of bc 
-#                       or debug string output
-#
-function bc_calc ()
-{
-    scale=$1;
-
-    if ! is_num "$scale" && test "$scale" != "no"; then
-	echo "bc_calc: Wrong first argument " >&2
-	echo "'$scale' is not a number." >&2
-	exit 1
-    fi
-
-    test "$scale" == "no" && scale=""
-
-    shift
-    exp=$(test "$scale" && echo "scale=$scale;";
-	test "$*" && echo "$*" || "${cat}" - )
-    
-    ans=$(echo "$exp" | "${bc}" 2>&1)
-
-    if ! is_num "$ans"; then
-	echo "bc failed on this expression : " >&2
-	echo "$exp" >&2
-	echo "bc returned :" >&2
-	echo "$ans" >&2
-	exit 1;
-    else
-	echo "$ans"
-	return 0
-    fi    
-}
 
 ##
 # Go fetch EOF information in log to get a good approximation
@@ -557,7 +648,7 @@ function get_last_chunk() {
 function show_bar()
 {
 
-    echo "=== BAR === [ 'x' dd_rescued, '*' next jump point, '|' '.' not dd_rescued ]"
+    echo "=== BAR === [ 'x' parsed, '*' next jump point, '|' '.' not parsed ]"
 
     if [ "$eof" == "nothing" ] || test -z "$eof"
     then
@@ -689,38 +780,39 @@ function show_bar()
 
 function show_info()
 {
-    echo "=== dd_rhelp INFO -" $(echo "$chunk" | "${wc}" -l) "chunks...";
-    jump=$(get_next_pos | "${cut}" -f 1 -d ":")
-    [ "$jump" != "0" ] && echo -n "- Jump pos : $(get_next_pos | "${cut}" -f 1 -d ":") "
+    echo "=== dd_rhelp INFO -" $(echo "$chunk" | "${wc}" -l) "parsed chunks...";
+
+
     if [ "$eof" == "nothing" ]
     then
-      echo "- max file size : no limit found"
+# 	echo "- max file size : no limit found"
+	:
     else
-      echo "- max file size : $eof"
-
-      echo -en "- Biggest hole size : " "$(bc_calc 1 "$(get_next_pos | "${cut}" -f 2 -d ":") * 2")" "k "
+#	echo "- max file size : $eof"
+	
+	echo -e "- Biggest unparsed chunk : " "$(bc_calc 1 "$(get_next_pos | "${cut}" -f 2 -d ":") * 2")" "k "
     fi
-
-  parsing="$logcontent"
-  total_errxfer="0";
-  total_succxfer="0";
-  total_xferd="0";
-
-  while test "$parsing" 
-  do
-    firstline="$(echo "$parsing" | "${head}" -n 1)"
-    parsing="$(echo "$parsing" | "${tail}" -n +2)"
     
-    xferd="$(echo "$firstline" | "${cut}" -f 2 -d ":" | "${cut}" -f 2 -d "=")"
-    errxfer="$(echo "$firstline" | "${cut}" -f 4 -d ":" | "${cut}" -f 2 -d "=")"
-    succxfer="$(echo "$firstline" | "${cut}" -f 5 -d ":" | "${cut}" -f 2 -d "=")"
-
-    total_errxfer="$(bc_calc 1 "$total_errxfer + $errxfer")"
-    total_succxfer="$(bc_calc 1 "$total_succxfer + $succxfer")"
-    total_xferd="$(bc_calc 1 "$total_xferd + $xferd")"
-
-  done
-
+    parsing="$logcontent"
+    total_errxfer="0";
+    total_succxfer="0";
+    total_xferd="0";
+    
+    while test "$parsing" 
+    do
+	firstline="$(echo "$parsing" | "${head}" -n 1)"
+	parsing="$(echo "$parsing" | "${tail}" -n +2)"
+	
+	xferd="$(echo "$firstline" | "${cut}" -f 2 -d ":" | "${cut}" -f 2 -d "=")"
+	errxfer="$(echo "$firstline" | "${cut}" -f 4 -d ":" | "${cut}" -f 2 -d "=")"
+	succxfer="$(echo "$firstline" | "${cut}" -f 5 -d ":" | "${cut}" -f 2 -d "=")"
+	
+	total_errxfer="$(bc_calc 1 "$total_errxfer + $errxfer")"
+	total_succxfer="$(bc_calc 1 "$total_succxfer + $succxfer")"
+	total_xferd="$(bc_calc 1 "$total_xferd + $xferd")"
+	
+    done
+    
 
     size=0
     cursize=0
@@ -728,35 +820,64 @@ function show_info()
     next=0
     for i in $chunk
     do
-      next=$(echo "$i" | "${cut}" -f 1 -d "-")
-      if [ "$next" != "$start" ]
-      then
-	  cursize="$(bc_calc 1 "$next - $start")"
-	  size="$(bc_calc 1 "$size + $cursize")"
-      fi
-      start=$(echo "$i" | "${cut}" -f 2 -d "-")
+	next=$(echo "$i" | "${cut}" -f 1 -d "-")
+	if [ "$next" != "$start" ]
+	then
+	    cursize="$(bc_calc 1 "$next - $start")"
+	    size="$(bc_calc 1 "$size + $cursize")"
+	fi
+	start=$(echo "$i" | "${cut}" -f 2 -d "-")
     done
-    echo -e "- total holes : ${size}k"
-
-    echo -e "- xferd(succ/err) : ${total_xferd}k(${total_succxfer}k/${total_errxfer}k)"
+    #echo -e "- total unparsed : ${size}k"
+    #echo -e ""
 
     eof_limit=$(get_last_chunk)
 
-    echo -en "- EOF "
+    echo -e "- xferd(succ/err) : ${total_xferd}k(${total_succxfer}k/${total_errxfer}k)"
 
-    if  [ "$eof" != "nothing" ] && 
-	 [ "$eof" == "$eof_limit" ];then
-	echo "is found and is at ${eof}k."
-    else
-	if [ "$eof" != "nothing" ]; then
-	    echo "is not found, but between ${eof_limit}k and ${eof}k."
+
+    # if there are some data parsed
+    if [ "$eof_limit" != 0 ]; then 
+	[ "$eof" == "nothing" ] && 
+	echo -e "    less than       <$(bc_calc 0 "(100 * $total_xferd) / ${eof_limit}")%(<$(bc_calc 0 "(100 * $total_succxfer) / ${eof_limit}")%/<$(bc_calc 0 "(100 * $total_errxfer) / ${eof_limit}")%)"
+
+	[ "$eof" != "nothing" ] && [ "$eof" != "$eof_limit" ] && 
+	echo -e "    between         $(bc_calc 1 "(100 * $total_xferd) / ${eof}")-$(bc_calc 1 "(100 * $total_xferd) / ${eof_limit}")%($(bc_calc 1 "(100 * $total_succxfer) / ${eof}")-$(bc_calc 1 "(100 * $total_succxfer) / ${eof_limit}")%/$(bc_calc 2 "(100 * $total_errxfer) / ${eof}")-$(bc_calc 2 "(100 * $total_errxfer) / ${eof_limit}")%)"
+	
+	[ "$eof" != "nothing" ] && [ "$eof" == "$eof_limit" ] && 
+	echo -e "                    $(bc_calc 2 "(100 * $total_xferd) / ${eof}")%($(bc_calc 2 "(100 * $total_succxfer) / ${eof}")%/$(bc_calc 2 "(100 * $total_errxfer) / ${eof}")%)"
+	
+	[ "$eof" != "nothing" ] &&  [ "$eof" != "$eof_limit" ] && 
+	echo -e "    left to parse : between $(bc_calc 1 "$eof - $total_xferd")k and $(bc_calc 1 "$eof_limit - $total_xferd")k"
+	[ "$eof" != "nothing" ] &&  [ "$eof" == "$eof_limit" ] && 
+	echo -e "    left to parse : $(bc_calc 1 "$eof - $total_xferd")k"
+
+    
+	echo -en "- EOF "
+	
+	if  [ "$eof" != "nothing" ] && 
+	    [ "$eof" == "$eof_limit" ];then
+	    
+	    echo "is found and is at ${eof}k."
+	    
+	    
 	else
-	    echo "is not found, but greater than ${eof_limit}k"
+	    if [ "$eof" != "nothing" ]; then
+		echo "is not found, but between ${eof_limit}k and ${eof}k."
+	    else
+		echo "is not found, but greater than ${eof_limit}k"
+	    fi
 	fi
     fi
+    
+
+    jump=$(get_next_pos | "${cut}" -f 1 -d ":")
+
+    [ "$jump" != "0" ] && echo -n "- Jump pos : $(get_next_pos | "${cut}" -f 1 -d ":") "
 
     if [ "$size" == "0" ] && [ "$eof" != "nothing" ] && 
 	[ "$eof" == "$eof_limit" ];then
+	
 	return 0
     else
 	return 1
@@ -922,6 +1043,7 @@ if [ "$?" == "0" ] ; then
     echo "All your data has been dd_rescued."
 else 
     if [ "$opt" == "info" ];then
+	echo "$info";
 	show_bar
     fi
 fi
@@ -953,28 +1075,45 @@ while [ "$(echo "$chunk" | "${wc}" -l)" -gt "1" ] ||
  \n$chunk\n"
   [ "$opt" == "info" ] && exit 1;
 
-  next_pos="$(get_next_pos | "${cut}" -f 1 -d ":")k"
-  count="$(get_next_pos | "${cut}" -f 2 -d ":")k"
+  getnextpos_content="$(get_next_pos)"
+  next_pos="$(echo "$getnextpos_content" | "${cut}" -f 1 -d ":")"
+  count="$(echo "$getnextpos_content" | "${cut}" -f 2 -d ":")"
+  nbchunks="$(echo "$chunk" | "${wc}" -l)"
 
+  if [ "$nbchunks" -le "$min_chunks" ]; then
+      max_err="$max_err_min";
+  else
+      if [ "$nbchunks" -ge "$max_chunks" ]; then
+	  max_err="$(bc_calc 0 "$count * 2")";
+      else
+	  ## XXXVaab : must keep a high scale (ie 5) to avoid high
+	  ##  simplification due to the 0..1 result of the division.
+	  max_err="$(bc_calc 5 "$max_err_min + ((($nbchunks - $min_chunks)/($max_chunks - $nbchunks)) * ((${count} * 2) - $max_err_min))" | cut -f 1 -d ".")"
+      fi
+  fi
 
-  if [ "$next_pos" != "0k" ]
+  max_err_k="$(bc_calc 1 "$max_err / 2")";
+
+  if [ "$next_pos" != "0" ]
   then
-      echo "=== launched via '$exname' at $next_pos, $count <<< ===" >> "$logfile"
-      echo "=== launched via '$exname' at $next_pos, $count <<< ==="
-      ${DD_RESCUE} -r -s "$next_pos" -l "$logfile" -e "$max_err" -B "$min_bs" -b "$max_bs" -m "$count" "$infile" "$outfile"
+      logline="=== parsing at ${next_pos}k, for ${count}k, max continuous err: ${max_err_k}k <<< ===";
+      echo "$logline" >> "$logfile"
+      echo "$logline"
+      ${DD_RESCUE} -r -s "$next_pos"k -l "$logfile" -e "$max_err" -B "$min_bs" -b "$max_bs" -m "$count"k "$infile" "$outfile"
       swallow_last_summary
   fi
 
-  if [ "$next_pos" != "${eof}k" ]
+  if [ "$next_pos" != "${eof}" ]
   then
       if [ "$eof" == "nothing" ]
       then
 	  count=0;
       fi
 
-      echo "=== launched via '$exname' at $next_pos, $count >>> ===" >> "$logfile"
-      echo "=== launched via '$exname' at $next_pos, $count >>> ==="
-      ${DD_RESCUE} -s "$next_pos" -l "$logfile" -e "$max_err" -B "$min_bs" -b "$max_bs" -m "$count" "$infile" "$outfile"
+      logline="=== parsing at ${next_pos}k, for ${count}k, max continuous err: ${max_err_k}k >>> ===";
+      echo "$logline" >> "$logfile"
+      echo "$logline"
+      ${DD_RESCUE} -s "$next_pos"k -l "$logfile" -e "$max_err" -B "$min_bs" -b "$max_bs" -m "$count"k "$infile" "$outfile"
       swallow_last_summary
   fi
  

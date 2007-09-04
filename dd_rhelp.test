@@ -14,6 +14,8 @@ include shunit
 
 depends sed grep cat cut tr head touch wc bc dd
 
+export -f matches
+export grep
 
 tmp=/tmp
 
@@ -24,14 +26,28 @@ gnu_standards
 #
 # Checking bad arguments
 #
+assert_list <<EOF
 
-Section Bad Arguments
+### Bad Arguments
 
 # were tested by commenting print_error, print_usage
-assert "$tprog with 1 empty arg fails (usage)" ! ./$tprog \'\' 			\&\& ./$tprog \'\'			"2>&1" \| "$grep" "^usage:"
-assert "$tprog with 2 empty arg fails (error)" ! ./$tprog \'\' \'\' 		\&\& ./$tprog \'\' \'\' 		"2>&1" \| "$grep" "error"
-assert "$tprog with 3 empty arg fails (error)" ! ./$tprog \'\' \'\' \'\' 	\&\& ./$tprog \'\' \'\' \'\'	"2>&1" \| "$grep" "error"
 
+## -- call of '$tprog' with 1 empty arg fails (usage)
+
+! ./$tprog ''                                && 
+  ./$tprog '' 2>&1 | "$grep" "^usage:"
+
+## -- $tprog with 2 empty arg fails (error)
+
+! ./$tprog '' ''                             && 
+  ./$tprog '' '' 2>&1 | "$grep" "error"
+
+## -- $tprog with 3 empty arg fails (error)
+
+! ./$tprog '' '' ''                          && 
+  ./$tprog '' '' '' 2>&1 | "$grep" "error"
+
+EOF
 
 temp1="$tmp/${tprog}_test.$$.a.tmp"
 temp2="$tmp/${tprog}_test.$$.b.tmp"
@@ -54,6 +70,9 @@ assert "$tprog arg1 does exists, but arg2 doesn't, generates 'error:'." 	! ./$tp
 # Finds dd_rescue ?
 #
 
+
+if [ -z "$(which dd_rescue)" ]; then
+
 Section dd_rescue finding
 
 Elt Creating $tempdir
@@ -63,16 +82,26 @@ cd $tempdir
 # && PATH_OLD=$PATH && PATH="" && export PATH
 Feedback
 
-echo WARNING : if dd_rescue is in PATH these tests won\'t be accurate...
-
-
 # were tested by changing 'not found' to 'not found'
+assert_list <<EOF
 
-if assert "errorlevel != 0 if no dd_rescue found" ! ./$tprog "$temp2" "$temp1"; then
-	assert "no dd_rescue in path ('..not found ..')" ./$tprog "$temp2" "$temp1" "2>&1" \| "$grep" -i \"not found\"
-	assert "no dd_rescue in path ('..dd_rescue..')" ./$tprog "$temp2" "$temp1" "2>&1" \| "$grep" -i "dd_rescue"
-	assert "no dd_rescue in path ('..path..')" ./$tprog "$temp2" "$temp1" "2>&1" \| "$grep" -i "path"
-fi
+## -- errorlevel != 0 if no dd_rescue found
+
+! ./$tprog "$temp2" "$temp1"
+
+## -- no dd_rescue in path ('..not found ..')
+
+./$tprog "$temp2" "$temp1" 2>&1 | "$grep" -i "not found"
+
+## -- no dd_rescue in path ('..dd_rescue..')
+
+./$tprog "$temp2" "$temp1" 2>&1 | "$grep" -i "dd_rescue"
+
+## -- no dd_rescue in path ('..path..')
+
+./$tprog "$temp2" "$temp1" 2>&1 | "$grep" -i "path"
+
+EOF
 
 
 Elt Creating dummy dd_rescue in curdir
@@ -105,6 +134,14 @@ Elt Deleting dummy dd_rescue
 rm -f "$tempdir/dd_rescue"
 Feedback
 
+else
+    echo 
+    echo "WARNING : skipping dd_rescue finding tests !!"
+fi
+
+
+
+
 
 #Elt Tearing down
 #PATH=$PATH_OLD && export PATH && 
@@ -128,10 +165,11 @@ assert "contents should be equal" diff "$temp2" "$temp1"
 Elt Tearing Down tests
 rm -f "$temp1" "$temp2"
 Feedback
-
-echo "All tests have been conducted, and should inform you on the sanity
+echo 
+echo "All tests have been conducted, and should inform you on the sanity \
 of this version of dd_rhelp"
-echo "For a complete and simple test, try with a bad floppy, or CD-ROM."
+echo
+echo "If you look for a complete and simple test, try with a bad floppy, or CD-ROM. And use and abuse of the Ctrl-C shortcut to cancel and resume parsing."
 
 
 

@@ -1,7 +1,17 @@
+2007-09-04  LAB Valentin  <vaab@free.fr>
+
+        * Smart checking of sane destination location for log file (avoiding disk
+	space problems, and writing to strange device filesystem as /dev/*.log).
+        * dynamicall max_err facility, to reduce the creation of too much
+	chunks.
+	* Revamped some info displayed, should be more comprehensive.
+        * Release of 0.1.2
+
+
 2007-06-25  LAB Valentin  <vaab@free.fr>
 
 	* Fixed "tail" calls for obsolete "+X" argument.
-	* removed ./configure && make && make install build process
+	* removed "./configure && make && make install" build process
 	* Release of 0.1.1
 
 2004-06-02  LAB Valentin  <vaab@free.fr>

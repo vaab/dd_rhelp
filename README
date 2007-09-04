@@ -32,16 +32,26 @@ As it is for dd_rhelp, which has saved me YEARS on my hard drive.
 Important note :
 ----------------
 
-For some times, dd_rhelp was the only (AFAIK) tool that did the job it accomplish, but since now a bunch of years, Antonio Diaz did write a ideal replacement for my tool : GNU ddrescue. 
-Yes, this is not very clever to have called a tool the same name that 'dd_rescue' (catch the subtle difference ?) from Kurt Garloff, but it seems that it was 
-done by intent as we warned Antonio Diaz from the fact it would mess things.
-Nevertheless, I really encourage you to use this replacement tool if it works for you (and it should be the case). Why ? Understand first what we are comparing : 
+For some times, dd_rhelp was the only tool (AFAIK) that did this type of job, but
+since a few years, it is not true anymore : Antonio Diaz did write a ideal 
+replacement for my tool : GNU 'ddrescue'.
+ 
+Yes, this is not very clever to have called a tool the same name that 'dd_rescue'
+from Kurt Garloff (catch the subtle difference between 'ddrescue' and 'dd_rescue' ?),
+but it seems that it was done by intent as we warned Antonio Diaz from the fact it
+would probably mess users in this tiny world of hard drive recovery tools.
+
+Nevertheless, I really encourage you to use this replacement tool if it works for you
+(and it should be the case). Why ? Understand first what we are comparing : 
 - dd_rhelp (in bash script) + dd_rescue (in C) in one hand
 - ddrescue (in C) in the other.
 
-dd_rhelp was meant as a quick hack to implement what dd_rescue didn't do, and what (AFAIK) couldn't be done at that time, with any soft. 
+dd_rhelp was meant as a quick hack to implement what dd_rescue didn't do, and what 
+couldn't be done at that time (AFAIK). 
 
-It could be some cases where ddrescue won't work, and this is the major reason why I keep maintaining dd_rhelp. It is important to tell me and Antonio Diaz when these cases occur.
+It could be some cases where ddrescue won't work, and this is the major reason why 
+I keep maintaining dd_rhelp. It is important to tell me and Antonio Diaz when these
+cases occur.
 
 Now that you are enlightened, you are free to use dd_rhelp.
 

@@ -11,7 +11,7 @@ Installation (for dd_rhelp > 0.1.0)
 
    Installation process have been greatly simplified with version 0.1.0 as
 it as been completely removed ! Removing the previous hassle of the 
-./configure && make && make install normally reserved for
+"./configure && make && make install" normally reserved for
 languages that requires compilation.
 
    So for version superior to 0.1.0, installation is only a mean of a direct

@@ -1,10 +1,14 @@
+Version 0.1.2
+	- IMPROVEMENT : will check the log file destination for sane conditions and will try some other locations if not.
+	- IMPROVEMENT : will manage max_err parameter to avoid creating to much chunks.
+	- More and better information displayed at 'info' time.
 Version 0.1.0
         - INSTALL : No more ./configure && make && make install ... all detection were done at runtime anyway
         - UPDATE : updated libs provided in dd_rhelp
         - UPDATE : finally compatible with recent tail/head "-n" arguments
         - Added some sanity tests.
         - TEST : Started to create dd_rhelp.test which unit tests dd_rhelp.
- Version 0.0.6
+Version 0.0.6
         - Better error report
         - BUGFIX :
         - Strange behavior when you had 1 segments in the beginning
