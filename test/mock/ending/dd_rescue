@@ -1,0 +1,30 @@
+#!/bin/bash
+
+if test "$1" == "-V" ; then
+	cat <<EOF
+
+dd_rescue Version 1.14, garloff@suse.de, GNU GPL
+ ($Id: dd_rescue.c,v 1.55 2007/03/18 14:29:10 garloff Exp $)
+EOF
+ 
+	exit 0;
+fi
+
+
+
+
+if [ -e "$4" ] ; then
+ 
+cat <<EOF >> $4
+dd_rescue: (info): ipos:    396578.5k, opos:    396578.5k, xferd:         0.0k
+                   errs:      0, errxfer:         0.0k, succxfer:         0.0k
+             +curr.rate:        0kB/s, avg.rate:        0kB/s, avg.load:  0.0%
+Summary for /dev/disk1s0 -> disk.bin:
+dd_rescue: (info): ipos:    396578.5k, opos:    396578.5k, xferd:         0.5k
+                   errs:      0, errxfer:         0.0k, succxfer:         0.5k
+             +curr.rate:        0kB/s, avg.rate:        0kB/s, avg.load:  0.0%
+EOF
+exit 0;
+fi
+
+exit 1;

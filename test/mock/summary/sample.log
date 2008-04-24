@@ -1,0 +1,39 @@
+=== COMPUTED VERSION OF LOG :
+chunk:
+logcontent:
+eof:nothing
+=== launched via 'dd_rhelp' at 0k, 0 >>> ===
+dd_rescue: (fatal): Caught signal 2 "Interrupt". Exiting!
+Summary for /dev/sda -> /dev/sdb:
+dd_rescue: (info): ipos:   2672000.0k, opos:   2672000.0k, xferd:   2672000.0k
+                   errs:      0, errxfer:         0.0k, succxfer:   2672000.0k
+             +curr.rate:    14640kB/s, avg.rate:    14999kB/s, avg.load:  3.8%
+=== COMPUTED VERSION OF LOG :
+chunk:0-2672000.0
+logcontent:ipos=2672000.0:xferd=2672000.0:NR:errxfer=0.0:succxfer=2672000.0
+eof:nothing
+=== launched via 'dd_rhelp' at 5344000.0k, 2672000.0k <<< ===
+Summary for /dev/sda -> /dev/sdb:
+dd_rescue: (info): ipos:   2672000.0k, opos:   2672000.0k, xferd:   2672000.0k
+             -     errs:      0, errxfer:         0.0k, succxfer:   2672000.0k
+             +curr.rate:     9949kB/s, avg.rate:    10115kB/s, avg.load:  3.1%
+=== COMPUTED VERSION OF LOG :
+chunk:0-5344000.0
+logcontent:ipos=2672000.0:xferd=2672000.0:NR:errxfer=0.0:succxfer=2672000.0;ipos=2672000.0:xferd=2672000.0:RE:errxfer=0.0:succxfer=2672000.0
+eof:nothing
+=== launched via 'dd_rhelp' at 5344000.0k, 0 >>> ===
+dd_rescue: (fatal): Caught signal 2 "Interrupt". Exiting!
+Summary for /dev/sda -> /dev/sdb:
+dd_rescue: (info): ipos:  39074112.0k, opos:  39074112.0k, xferd:  33730112.0k
+                   errs:      0, errxfer:         0.0k, succxfer:  33730112.0k
+             +curr.rate:      469kB/s, avg.rate:    14641kB/s, avg.load:  3.7%
+=== COMPUTED VERSION OF LOG :
+chunk:0-39074112.0
+logcontent:ipos=2672000.0:xferd=2672000.0:NR:errxfer=0.0:succxfer=2672000.0;ipos=2672000.0:xferd=2672000.0:RE:errxfer=0.0:succxfer=2672000.0;ipos=39074112.0:xferd=33730112.0:NR:errxfer=0.0:succxfer=33730112.0
+eof:78150944.0
+=== launched via 'dd_rhelp' at 78148224.0k, 39074112.0k <<< ===
+dd_rescue: (fatal): Caught signal 2 "Interrupt". Exiting!
+Summary for /dev/sda -> /dev/sdb:
+dd_rescue: (info): ipos:  75350080.0k, opos:  75350080.0k, xferd:   2798144.0k
+             -     errs:      0, errxfer:         0.0k, succxfer:   2798144.0k
+             +curr.rate:     8226kB/s, avg.rate:     8367kB/s, avg.load:  2.5%

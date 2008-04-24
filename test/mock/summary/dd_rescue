@@ -1,0 +1,54 @@
+#!/bin/bash
+
+if test "$1" == "-V" ; then
+	cat <<EOF
+
+dd_rescue Version 1.13, garloff@suse.de, GNU GPL
+ ($Id: dd_rescue.c,v 1.55 2007/03/18 14:29:10 garloff Exp $)
+EOF
+ 
+	exit 0;
+fi
+
+
+
+
+if test -e "$4"; then
+
+
+
+cat <<EOF >> $4
+dd_rescue: (info): ipos:  39074176.0k, opos:  39074176.0k, xferd:  18137920.0k
+             -     errs:      0, errxfer:         0.0k, succxfer:  18137920.0k
+             +curr.rate:      442kB/s, avg.rate:     8994kB/s, avg.load:  2.7%
+dd_rescue: (info): ipos:  39074176.0k, opos:  39074176.0k, xferd:  18137920.0k
+             -  *  errs:      0, errxfer:         0.0k, succxfer:  18137920.0k
+             +curr.rate:        0kB/s, avg.rate:     8994kB/s, avg.load:  2.7%
+dd_rescue: (warning): /dev/sda (39074176.0k): Input/output error!
+dd_rescue: (info): ipos:  39074175.5k, opos:  39074175.5k, xferd:  18137920.5k
+             -  *  errs:      1, errxfer:         0.5k, succxfer:  18137920.0k
+             +curr.rate:     2083kB/s, avg.rate:     8994kB/s, avg.load:  2.7%
+dd_rescue: (warning): /dev/sda (39074175.5k): Input/output error!
+dd_rescue: (info): ipos:  39074175.0k, opos:  39074175.0k, xferd:  18137921.0k
+             -  *  errs:      2, errxfer:         1.0k, succxfer:  18137920.0k
+             +curr.rate:     2551kB/s, avg.rate:     8994kB/s, avg.load:  2.7%
+dd_rescue: (warning): /dev/sda (39074175.0k): Input/output error!
+dd_rescue: (info): ipos:  39074174.5k, opos:  39074174.5k, xferd:  18137921.5k
+             -  *  errs:      3, errxfer:         1.5k, succxfer:  18137920.0k
+             +curr.rate:     2604kB/s, avg.rate:     8994kB/s, avg.load:  2.7%
+dd_rescue: (warning): /dev/sda (39074174.5k): Input/output error!
+dd_rescue: (info): ipos:  39074174.0k, opos:  39074174.0k, xferd:  18137922.0k
+             -  *  errs:      4, errxfer:         2.0k, succxfer:  18137920.0k
+             +curr.rate:     2618kB/s, avg.rate:     8994kB/s, avg.load:  2.7%
+dd_rescue: (warning): /dev/sda (39074174.0k): Input/output error!
+dd_rescue: (fatal): maxerr reached!
+Summary for /dev/sda -> /dev/sdb:
+dd_rescue: (info): ipos:  39074174.0k, opos:  39074174.0k, xferd:  18137922.0k
+             -     errs:      5, errxfer:         2.0k, succxfer:  18137920.0k
+             +curr.rate:        0kB/s, avg.rate:     8994kB/s, avg.load:  2.7%
+EOF
+exit 0;
+fi
+
+
+exit 1;

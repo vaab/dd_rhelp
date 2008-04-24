@@ -11,6 +11,9 @@ exempt of errors.
 Michael Lucas (for asking good questions)
 Asheesh Laroia (help for the Darwin / Mac OS X support)
 Pätrick Guillot (for reminding me the problem with my obsoletes head/tail arguments as others)
+John Schlerf (for pointing out some bugs)
+Jim Wiedman (for pointing out some bugs)
+Seunghun Thomas Lee (for posting a BSD sed/stat compliant dd_rhelp)
 
 And big thanks to all those from which I've received mail !
 

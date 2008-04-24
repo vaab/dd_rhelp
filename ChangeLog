@@ -1,3 +1,12 @@
+2008-04-24  LAB Valentin  <vaab@free.fr>
+	
+	* tackled EINVAL in place of EOF problem
+	* changed main algo to favor head dd_rescuing
+	* added integrity tests
+	* prevented double parsing of logcontent
+	* dd_rhelp.test uses a complete test bed, with new mock tests
+	* Release of 0.2.0
+
 2007-09-04  LAB Valentin  <vaab@free.fr>
 
         * Smart checking of sane destination location for log file (avoiding disk

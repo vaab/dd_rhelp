@@ -1,3 +1,13 @@
+Version 0.2.0
+	- COMPATIBILITY : macosx support will use BSD sed and BSD stat
+        - SPEED : main algo is somewhat cleverer than before by going first forward then 
+	backwards and choosing a bias to favor forward dd_rescueing which is often much
+	quicker.
+	- SPEED : some effort to cache some values results in some soft speed ameliorations.
+	- TEST : big efforts on the testing bed for dd_rhelp.
+	- CHECK : efforts to add some consistency checks all around.
+	- BUGFIX : handfull of little bugs where fixed.
+	- BUGFIX : correctly handle strange behavior where EINVAL is sent in place of EOF
 Version 0.1.2
 	- IMPROVEMENT : will check the log file destination for sane conditions and will try some other locations if not.
 	- IMPROVEMENT : will manage max_err parameter to avoid creating to much chunks.

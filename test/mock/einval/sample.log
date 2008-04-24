@@ -1,0 +1,4 @@
+=== COMPUTED VERSION OF LOG :
+chunk:0-6080.0:12160.0-21008.0:42016.0-46880.0:93760.0-105920.0:211840.0-232128.0:464256.0-480608.0:612278.0-673218.0
+logcontent:ipos=6080.0:xferd=6080.0:NR:errxfer=0.0:succxfer=6080.0;ipos=21008.0:xferd=8848.0:NR:errxfer=0.0:succxfer=8848.0;ipos=46880.0:xferd=4864.0:NR:errxfer=0.0:succxfer=4864.0;ipos=105920.0:xferd=12160.0:NR:errxfer=0.0:succxfer=12160.0;ipos=232128.0:xferd=20288.0:NR:errxfer=0.0:succxfer=20288.0;ipos=480608.0:xferd=16352.0:NR:errxfer=0.0:succxfer=16352.0;ipos=673218.0:xferd=48428.0:NR:errxfer=2.0:succxfer=48426.0;ipos=612278.0:xferd=12512.0:RE:errxfer=0.0:succxfer=12512.0
+eof:961216.0
