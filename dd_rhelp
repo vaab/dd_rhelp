@@ -1133,7 +1133,6 @@ function process_log() {
 
     [ "$DEBUG" == "on" ] && echo "- processing $(echo "$data" | "${wc}" -l) log lines."
 
-	
     [ "$DEBUG" == "on" ] && echo -n "- cleaning data ["
 
     ## Removes the summary lines that summed 0.0k xferd !
@@ -1158,9 +1157,8 @@ function process_log() {
     [ "$DEBUG" == "on" ] && echo -n "."
     data=$(echo "$data" | "${tr}" ";" "\n")
     [ "$DEBUG" == "on" ] && echo ".]"
-    
 
-    if test -z "$data"; then 
+    if test -z "$data"; then
 	[ "$DEBUG" == "on" ] && echo "- no dd_rescue data was left after cleaning log : filters seems to have filtered to much !."
 	[ "$DEBUG" == "on" ] && echo "- eof was : $eof"
 	remove_chunk_on_eof
