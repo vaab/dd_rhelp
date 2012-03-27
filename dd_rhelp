@@ -487,8 +487,8 @@ function get_eof() {
     else
 	eoflines="$1"
     fi
-    eoflines=$(echo "$eoflines" | "${grep}" "$eofstring" | sed_compat 's/^dd_rescue: \(info\): .* \(([0-9\.]+)k\): EOF$/\1/g')
 
+    eoflines=$(echo "$eoflines" | "${grep}" "$eofstring" | sed_compat 's/^dd_rescue: \(info\): .* \(([0-9\.]+)k\): EOF.*$/\1/g')
 
     for i in $eoflines; do
 
