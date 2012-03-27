@@ -487,19 +487,19 @@ function get_eof() {
     else
 	eoflines="$1"
     fi
-    
     eoflines=$(echo "$eoflines" | "${grep}" "$eofstring" | sed_compat 's/^dd_rescue: \(info\): .* \(([0-9\.]+)k\): EOF$/\1/g')
 
 
-  for i in $eoflines ;do
+    for i in $eoflines; do
 
-    [ "$eof" == "nothing" ]; eof=$i
+        ## XXXvlab: what the f*ck ?
+        [ "$eof" == "nothing" ]; eof=$i
 
-    if [ "$(bc_calc 1 "$eof > $i")" == "1" ];then
-	eof=$i
-	continue
-    fi
-  done
+        if [ "$(bc_calc 1 "$eof > $i")" == "1" ]; then
+	    eof=$i
+	    continue
+        fi
+    done
 }
 
 
