@@ -1,50 +1,63 @@
-Version 0.2.0
-	- COMPATIBILITY : macosx support will use BSD sed and BSD stat
-        - SPEED : main algo is somewhat cleverer than before by going first forward then 
-	backwards and choosing a bias to favor forward dd_rescueing which is often much
-	quicker.
-	- SPEED : some effort to cache some values results in some soft speed ameliorations.
-	- TEST : big efforts on the testing bed for dd_rhelp.
-	- CHECK : efforts to add some consistency checks all around.
-	- BUGFIX : handfull of little bugs where fixed.
-	- BUGFIX : correctly handle strange behavior where EINVAL is sent in place of EOF
-Version 0.1.2
-	- IMPROVEMENT : will check the log file destination for sane conditions and will try some other locations if not.
-	- IMPROVEMENT : will manage max_err parameter to avoid creating to much chunks.
-	- More and better information displayed at 'info' time.
-Version 0.1.0
-        - INSTALL : No more ./configure && make && make install ... all detection were done at runtime anyway
-        - UPDATE : updated libs provided in dd_rhelp
-        - UPDATE : finally compatible with recent tail/head "-n" arguments
-        - Added some sanity tests.
-        - TEST : Started to create dd_rhelp.test which unit tests dd_rhelp.
-Version 0.0.6
-        - Better error report
-        - BUGFIX :
-        - Strange behavior when you had 1 segments in the beginning
-        - MacOS X bugfixes
-Version 0.0.5
-        - BUGFIX : 
-        - Strange behavior when you had 2 segments in the beginning
-        - Clean log file of caracters "0d" before reading it. This messed around
-          with wc (not sure), or bc.
-Version 0.0.4
-	- Automatic detection of all programs is now done at runtime rather
-        than at configure time.
-Version 0.0.3
-        - Better detection and information about EOF.
-        - Faster and cleaner than 0.0.2
-Version 0.0.2
-	- Check version of dd_rescue, and try to find the good one (>=1.03)
-	- dd_rhelp now writes a summary of its computation in log, allowing
-	   faster loading times.
-	- bar size is better ajusted and is counted in lines.
-Version 0.0.1
-	- work without knowing when the file ends (usefull for some /dev/*)
-	- ANSI bar showing advancement of dd_rescue
-	- Auto-manage dd_rescue start and stop parameters
-	- Runs until all disc is rescued
-	- Can be Killed/Ctrl-C... will resume its job the next time it is run.
-	- feeds it self on the normal dd_rescue log file and maintain it. So
-            it can resume on normal dd_rescue log created without dd_rhelp.
+0.2.0
+-----
+
+    - new: macosx support will use BSD sed and BSD stat
+    - new: main algo is somewhat cleverer than before by going first
+      forward then backwards and choosing a bias to favor forward
+      dd_rescueing which is often much quicker.
+    - new: big efforts on the testing bed for dd_rhelp.
+    - imp: efforts to add some consistency checks all around.
+    - imp: some effort to cache some values results in some soft speed
+      ameliorations.
+    - fix: handfull of little bugs where fixed.
+    - fix: correctly handle strange behavior where EINVAL is sent in
+      place of EOF
+
+0.1.2
+-----
+
+    - new: will check the log file destination for sane conditions
+      and will try some other locations if not.
+    - new: will manage max_err parameter to avoid creating to much
+      chunks.
+    - new: more and better information displayed at 'info' time.
+    - new: added some sanity tests.
+    - new: new dd_rhelp.test which unit-tests dd_rhelp.
+    - pkg: no more ./configure && make && make install ... all
+      detection were done at runtime anyway
+    - imp: updated libs provided in dd_rhelp
+    - imp: finally compatible with recent tail/head "-n" arguments
+
+0.0.6
+-----
+
+    - imp: better error report
+    - fix: strange behavior when you had 1 segments in the beginning
+    - fix: MacOS X bugfixes
+
+0.0.5
+-----
+
+    - fix: strange behavior when you had 2 segments in the beginning
+    - fix: clean log file of caracters "0d" before reading it. This messed
+      around with wc (not sure), or bc.
+    - new: automatic detection of all programs is now done at runtime rather
+    than at configure time.
+    - imp: better detection and information about EOF.
+    - imp: faster and cleaner than 0.0.2
+
+0.0.2
+-----
+
+    - new: check version of dd_rescue, and try to find the good one (>=1.03)
+    - new: dd_rhelp now writes a summary of its computation in log, allowing
+      faster loading times.
+    - imp: bar size is ajusted and is counted in lines.
+    - new: work without knowing when the file ends (usefull for some /dev/*)
+    - new: ANSI bar showing advancement of dd_rescue
+    - new: auto-manage dd_rescue start and stop parameters
+    - new: Runs until all disk is rescued
+    - new: Can be Killed/Ctrl-C... will resume its job the next time it is run.
+    - new: feeds it self on the normal dd_rescue log file and maintain it. So
+      it can resume on normal dd_rescue log created without dd_rhelp.
  

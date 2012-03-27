@@ -1,12 +1,12 @@
 #!/bin/bash
 
-#
-# Testing of dd_rhelp binary
-#
+##
+## Testing of dd_rhelp binary
+##
 
 #!- Library include
 . /etc/shlib
-#!- 
+#!-
 
 include pretty
 include common
@@ -21,38 +21,9 @@ tmp=/tmp
 
 export PATH=".:$PATH"
 
-#gnu_standards
-
-
-
 ##
-# Checking bad arguments
-function test_args {
-
-    assert_list <<EOF
-
-### Bad Arguments
-
-# were tested by commenting print_error, print_usage
-
-## -- call of '$tprog' with 1 empty arg fails (usage)
-
-! ./$tprog ''                                && 
-  ./$tprog '' 2>&1 | "$grep" "^usage:"
-
-## -- $tprog with 2 empty arg fails (error)
-
-! ./$tprog '' ''                             && 
-  ./$tprog '' '' 2>&1 | "$grep" "error"
-
-## -- $tprog with 3 empty arg fails (error)
-
-! ./$tprog '' '' ''                          && 
-  ./$tprog '' '' '' 2>&1 | "$grep" "error"
-
-EOF
-
-}
+## Convenience function
+##
 
 function init_test() {
 
@@ -73,7 +44,6 @@ function init_test() {
     Feedback
 }
 
-
 function tear_test() {
 
     Elt "Tearing down (deleting $temp2)"
@@ -85,6 +55,98 @@ function tear_test() {
 
 }
 
+function init_mock () {
+
+    test -z "$1" && print_syntax_error "missing first arg for init_mock function."
+
+    # sets id of mock =
+    mock_dir="test/mock"
+    dd_rescue_path="$mock_dir/$1/dd_rescue"
+    oracle_path="$mock_dir/$1/oracle"
+    log_path="$mock_dir/$1/sample.log"
+
+    test -z "$mock_id" || print_error "mock test '$mock_id' wasn't teared down."
+    test -e "$dd_rescue_path" || print_error "'$dd_rescue_path' does not exists."
+    test -e "$oracle_path" || print_error "'$oracle_path' does not exists."
+    test -e "$log_path" || print_error "'$log_path' does not exists."
+
+
+    Section Mock test : $1
+
+
+    init_test
+    Elt Copy mock dd_rescue to curdir
+    mkdir -p "$tempdir" &&
+    cp "$dd_rescue_path" "$tempdir/dd_rescue" &&
+    chmod +x "$tempdir/dd_rescue"
+    Feedback
+
+    Elt Copy current dd_rhelp to curdir
+    cp "./$tprog" "$tempdir/$tprog" &&
+    chmod +x "$tempdir/$tprog"
+    Feedback
+
+    Elt Copy mock log to curdir
+    cp "test/mock/$1/sample.log" "$temp1.log" &&
+    cd "$tempdir"
+    Feedback
+
+    Elt Creating mock source file
+    touch "$temp2"
+    Feedback
+
+    mock_id="$1"
+
+
+}
+
+function tear_mock() {
+
+    test -z "$mock_id" && print_error "no mock test was registered to be teared down."
+
+    Elt Tearing Down tests
+    rm -f "$tempdir/dd_rescue" "$temp1.old" "$tempdir/$tprog" && cd "$OLDPWD"
+    Feedback
+
+    mock_id=""
+    tear_test
+
+}
+
+##
+## Tests
+##
+
+#gnu_standards
+
+##
+# Checking bad arguments
+function test_args {
+
+    assert_list <<EOF
+
+### Bad Arguments
+
+# were tested by commenting print_error, print_usage
+
+## -- call of '$tprog' with 1 empty arg fails (usage)
+
+! ./$tprog ''                                &&
+  ./$tprog '' 2>&1 | "$grep" "^usage:"
+
+## -- $tprog with 2 empty arg fails (error)
+
+! ./$tprog '' ''                             &&
+  ./$tprog '' '' 2>&1 | "$grep" "error"
+
+## -- $tprog with 3 empty arg fails (error)
+
+! ./$tprog '' '' ''                          &&
+  ./$tprog '' '' '' 2>&1 | "$grep" "error"
+
+EOF
+
+}
 
 # were tested by commenting print_error
 function test_args_words () {
@@ -99,7 +161,7 @@ function test_args_words () {
 }
 
 
-#
+##
 # Finds dd_rescue ?
 #
 function test_find () {
@@ -156,7 +218,7 @@ EOF
 
 
 	assert "dd_rescue in cur dir" ! ./$tprog "$temp2" "$temp1" \&\& ./$tprog "$temp2" "$temp1" "2>&1" \| "$grep" -i \"error.*summary\"
-	
+
 	Elt 'Creating dummy dd_rescue (v1.11)'
 	echo "#!/bin/bash "> $tempdir/dd_rescue &&
 	echo "echo dd_rescue Version 1.11" >> $tempdir/dd_rescue &&
@@ -169,10 +231,10 @@ EOF
 	rm -f "$tempdir/dd_rescue"
 	Feedback
 
-else
+    else
 
 	print_warning "skipping some dd_rescue finding tests ! Because you have a 'dd_rescue' executable in your path."
-    
+
 	Elt 'Creating dummy dd_rescue (v1.11)'
 	echo "#!/bin/bash "> "$tempdir/dd_rescue" &&
 	echo "echo dd_rescue Version 1.11" >> "$tempdir/dd_rescue" &&
@@ -190,7 +252,7 @@ EOF
 
 	Elt Deleting dummy dd_rescue
 	rm -f "$tempdir/dd_rescue" &&
-	cd - 
+	cd -
 	Feedback
 
     fi
@@ -209,7 +271,7 @@ function test_f_chunkize_badblocks () {
 ## -- chunksize_badblocks test
 
 # loadfunc
-TESTFUNC=yes DEBUG=on ONCE=yes coef=0.5 . ./$tprog "$temp2" "$temp1" 
+TESTFUNC=yes DEBUG=on ONCE=yes coef=0.5 . ./$tprog "$temp2" "$temp1"
 a="\$(echo "0
 1
 4
@@ -231,8 +293,6 @@ EOF
 }
 
 
-
-
 function test_run () {
     Section Running Tests
 
@@ -244,57 +304,12 @@ function test_run () {
 }
 
 
-function init_mock () {
-
-    test -z "$1" && print_syntax_error "missing first arg for init_mock function."
-
-    # sets id of mock =
-    mock_dir="test/mock"
-    dd_rescue_path="$mock_dir/$1/dd_rescue"
-    oracle_path="$mock_dir/$1/oracle"
-    log_path="$mock_dir/$1/sample.log"
-
-    test -z "$mock_id" || print_error "mock test '$mock_id' wasn't teared down."
-    test -e "$dd_rescue_path" || print_error "'$dd_rescue_path' does not exists."
-    test -e "$oracle_path" || print_error "'$oracle_path' does not exists."
-    test -e "$log_path" || print_error "'$log_path' does not exists."
-
-
-    Section Mock test : $1
-
-
-    init_test
-    Elt Copy mock dd_rescue to curdir
-    mkdir -p "$tempdir" &&
-    cp "$dd_rescue_path" "$tempdir/dd_rescue" &&
-    chmod +x "$tempdir/dd_rescue"
-    Feedback
-
-    Elt Copy current dd_rhelp to curdir
-    cp "./$tprog" "$tempdir/$tprog" &&
-    chmod +x "$tempdir/$tprog"
-    Feedback
-
-    Elt Copy mock log to curdir
-    cp "test/mock/$1/sample.log" "$temp1.log" &&
-    cd "$tempdir"
-    Feedback
-    
-    Elt Creating mock source file
-    touch "$temp2"
-    Feedback
-
-    mock_id="$1"
-
-
-}
-
 function test_mock_summary () {
 
     init_mock summary
 
 #echo cd $PWD
-#echo DEBUG=on ONCE=yes coef=0.5 ./$tprog "$temp2" "$temp1" 
+#echo DEBUG=on ONCE=yes coef=0.5 ./$tprog "$temp2" "$temp1"
 #exit 1;
 
     assert_list <<EOF
@@ -309,7 +324,7 @@ test "\$?" == "128" # once mode eject a 128 errorlevel
 test -e "$OLDPWD/$log_path" -a -e "$temp1.log" &&
 ! "$diff" "$OLDPWD/$log_path" "$temp1.log"
 
-## -- compare last 3 line to canonical run. 
+## -- compare last 3 line to canonical run.
 
 test "\$("$tail" -n 3 "$temp1.log")" == "$("$cat" "$OLDPWD/$oracle_path")"
 
@@ -318,28 +333,10 @@ EOF
     tear_mock
 }
 
-function tear_mock() {
-
-    test -z "$mock_id" && print_error "no mock test was registered to be teared down."
-
-    Elt Tearing Down tests
-    rm -f "$tempdir/dd_rescue" "$temp1.old" "$tempdir/$tprog" && cd "$OLDPWD"
-    Feedback
-
-    mock_id=""
-    tear_test
-
-}
-
-
 
 function test_mock_einval() {
 
     init_mock einval
-
-#echo cd $PWD
-#echo DEBUG=on TWICE=yes coef=0.3 ./$tprog "$temp2" "$temp1" 
-#exit 1;
 
     assert_list <<EOF
 
@@ -353,7 +350,7 @@ test "\$?" == "128" # once mode eject a 128 errorlevel
 test -e "$OLDPWD/$log_path" -a -e "$temp1.log" &&
 ! "$diff" "$OLDPWD/$log_path" "$temp1.log"
 
-## -- compare chunk line before last one to canonical run 
+## -- compare chunk line before last one to canonical run
 
 a="\$(cat "$temp1.log" | grep "^chunk:" | tail -n 2 | head -n 1)"
 b="$(cat "$OLDPWD/$oracle_path" | grep "^chunk:")"
@@ -362,7 +359,7 @@ echo "A:" \$a
 echo "B:" \$b
 test "\$a" == "\$b"
 
-## -- compare last chunk line to canonical run. 
+## -- compare last chunk line to canonical run.
 
 a="\$(cat "$temp1.log" | grep "^chunk:" | tail -n 1 )"
 b="$(cat "$OLDPWD/$oracle_path"2 | grep "^chunk:")"
@@ -383,10 +380,6 @@ function test_mock_eof {
 
     init_mock eof
 
-#echo cd $PWD
-#echo DEBUG=on ONCE=yes coef=0.3 ./$tprog "$temp2" "$temp1" 
-#exit 1;
-
 assert_list <<EOF
 
 ## -- dd_rescue should run flawlessly
@@ -399,7 +392,7 @@ test "\$?" == "128" # once mode eject a 128 errorlevel
 test -e "$OLDPWD/$log_path" -a -e "$temp1.log" &&
 ! "$diff" "$OLDPWD/$log_path" "$temp1.log"
 
-## -- compare chunk line before last one to canonical run 
+## -- compare chunk line before last one to canonical run
 
 a="\$(cat "$temp1.log" | grep "^chunk:" | tail -n 1)"
 b="$(cat "$OLDPWD/$oracle_path" | grep "^chunk:")"
@@ -417,18 +410,18 @@ tear_mock
 
 
 function test_mock_ending {
-    
+
     init_mock ending
 
 #echo cd $PWD
-#echo DEBUG=on ONCE=yes coef=0.3 ./$tprog "$temp2" "$temp1" 
+#echo DEBUG=on ONCE=yes coef=0.3 ./$tprog "$temp2" "$temp1"
 #exit 1;
 
 assert_list <<EOF
 
 ## -- dd_rescue should run flawlessly
 
-DEBUG=on ONCE=yes coef=0.3 ./$tprog "$temp2" "$temp1" 
+DEBUG=on ONCE=yes coef=0.3 ./$tprog "$temp2" "$temp1"
 test "\$?" == "128" # once mode eject a 128 errorlevel
 
 ## -- logfile should have been modified
@@ -436,7 +429,35 @@ test "\$?" == "128" # once mode eject a 128 errorlevel
 test -e "$OLDPWD/$log_path" -a -e "$temp1.log" &&
 ! "$diff" "$OLDPWD/$log_path" "$temp1.log"
 
-## -- compare last chunk line to canonical run. 
+## -- compare last chunk line to canonical run.
+
+a="\$(cat "$temp1.log" | grep "^chunk:" | tail -n 1 )"
+b="$(cat "$OLDPWD/$oracle_path" | grep "^chunk:")"
+echo "a == b ?"
+echo "A:" \$a
+echo "B:" \$b
+test "\$a" == "\$b"
+
+
+EOF
+     tear_mock
+
+
+     init_mock ending
+
+assert_list <<EOF
+
+## -- dd_rescue should run flawlessly
+
+DEBUG=on TWICE=yes coef=0.3 ./$tprog "$temp2" "$temp1"
+test "\$?" == "128" # once mode eject a 128 errorlevel
+
+## -- logfile should have been modified
+
+test -e "$OLDPWD/$log_path" -a -e "$temp1.log" &&
+! "$diff" "$OLDPWD/$log_path" "$temp1.log"
+
+## -- compare last chunk line to canonical run.
 
 a="\$(cat "$temp1.log" | grep "^chunk:" | tail -n 1 )"
 b="$(cat "$OLDPWD/$oracle_path" | grep "^chunk:")"
@@ -448,13 +469,8 @@ test "\$a" == "\$b"
 
 EOF
 
-
      tear_mock
 
-
 }
-
-
-
 
 testbench $*
