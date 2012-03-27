@@ -1142,16 +1142,16 @@ function process_log() {
     [ "$DEBUG" == "on" ] && echo -n "."
     data=$(echo "$data" | "${grep}" "$infoline" -A 1 | "${cut}" -c 12-)
     [ "$DEBUG" == "on" ] && echo -n "."
-    data=$(echo "$data" | sed_compat 's/^\(info\): ipos: +//g')
+    data=$(echo "$data" | sed_compat 's/^\(info\): ipos: *//g')
     [ "$DEBUG" == "on" ] && echo -n "."
-    data=$(echo "$data" | sed_compat 's/^ +errs: +/NR:/g')
+    data=$(echo "$data" | sed_compat 's/^ +errs: */NR:/g')
     [ "$DEBUG" == "on" ] && echo -n "."
 
-    data=$(echo "$data" | sed_compat 's/^ +- +errs: +/RE:/g')
+    data=$(echo "$data" | sed_compat 's/^ +- +errs: */RE:/g')
     [ "$DEBUG" == "on" ] && echo -n "."
-    data=$(echo "$data" | sed_compat 's/^([0-9\.]+)k, opos:.+xferd: +([0-9\.]+)k$/ipos=\1:xferd=\2:/g')
+    data=$(echo "$data" | sed_compat 's/^([0-9\.]+)k, opos:.+xferd: *([0-9\.]+)k$/ipos=\1:xferd=\2:/g')
     [ "$DEBUG" == "on" ] && echo -n "."
-    data=$(echo "$data" | sed_compat 's/^(RE|NR):[0-9]+, errxfer: +([0-9\.]+)k, succxfer: +([0-9\.]+)k$/\1:errxfer=\2:succxfer=\3;/g')
+    data=$(echo "$data" | sed_compat 's/^(RE|NR):[0-9]+, errxfer: *([0-9\.]+)k, succxfer: +([0-9\.]+)k$/\1:errxfer=\2:succxfer=\3;/g')
     [ "$DEBUG" == "on" ] && echo -n "."
     data=$(echo "$data" | "${tr}" -d "\n")
     [ "$DEBUG" == "on" ] && echo -n "."
