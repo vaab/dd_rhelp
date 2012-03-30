@@ -63,7 +63,7 @@ maintainer="LAB Valentin <valentin.lab@kalysto.org>"
 
 include common
 
-depends sed grep cat cut tr head touch wc bc tail stat dirname basename df pwd sort
+depends sed grep cat cut tr head touch wc bc tail stat dirname basename df pwd sort tee
 
 usage="$exname {filename|device} {output-file} [{info}]
     or $exname --help
@@ -1317,7 +1317,34 @@ function save_log() {
 
 }
 
+##
+# Launch dd_rescue and
+#   - fill logs and stdout to get the full command line
+#   - swallow last summary
+#   - check errorlevel of dd_rescue
+# Requires
+#   env:
+#      $DD_RESCUE variable should be the path to dd_rescue executable
+#      $logfile sould ne the current logfile
+function rescue() {
 
+      echo "${DD_RESCUE}" "$@" | "${tee}" -a "$logfile"
+
+      "${DD_RESCUE}" "$@"
+      errlvl="$?"
+
+      case "$errlvl" in
+          139)
+              print_error "$DD_RESCUE exited with errlvl 139. That's probably a Segmentation Fault !" 2>&1
+              exit 1
+              ;;
+          default)
+              [ "$DEBUG" == "on" ] && echo "$DD_RESCUE returned with errorlevel $errlvl."
+              ;;
+      esac
+
+      swallow_last_summary
+}
 
 # === beginning of real code
 
@@ -1446,32 +1473,24 @@ while [ "$(echo "$chunk" | "${wc}" -l)" -gt "1" ] ||
 	  logline="=== parsing at ${next_pos}k, for ${countr}k, max continuous err: ${max_err_rk}k >>> ===";
       fi
 
+      echo "$logline" | "${tee}" -a "$logfile"
 
-      echo "$logline" >> "$logfile"
-      echo "${DD_RESCUE}" -s "$next_pos"k -l "$logfile" -e "$max_err_r" -B "$min_bs" -b "$max_bs" -m "$countr"k "$infile" "$outfile" >> "$logfile"
-      echo "$logline"
-      echo "${DD_RESCUE}" -s "$next_pos"k -l "$logfile" -e "$max_err_r" -B "$min_bs" -b "$max_bs" -m "$countr"k "$infile" "$outfile"
-      "${DD_RESCUE}" -s "$next_pos"k -l "$logfile" -e "$max_err_r" -B "$min_bs" -b "$max_bs" -m "$countr"k "$infile" "$outfile"
-      swallow_last_summary
+      rescue -s "$next_pos"k -l "$logfile" -e "$max_err_r" -B "$min_bs" -b "$max_bs" -m "$countr"k "$infile" "$outfile"
   fi
 
   ## testing purpose
   [ "$ONCE" == "yes" ] && exit 128;
 
-  if [ "$next_pos" != "0"  -a "${countl}" != "0" ]; then
+  if [ "$next_pos" != "0" -a "${countl}" != "0" ]; then
 
       logline="=== parsing at ${next_pos}k, for ${countl}k, max continuous err: ${max_err_lk}k <<< ===";
-      echo "$logline" >> "$logfile"
-      echo "${DD_RESCUE}" -r -s "$next_pos"k -l "$logfile" -e "$max_err_l" -B "$min_bs" -b "$max_bs" -m "$countl"k "$infile" "$outfile" >> "$logfile"
-      echo "$logline"
-      echo "${DD_RESCUE}" -r -s "$next_pos"k -l "$logfile" -e "$max_err_l" -B "$min_bs" -b "$max_bs" -m "$countl"k "$infile" "$outfile"
-      "${DD_RESCUE}" -r -s "$next_pos"k -l "$logfile" -e "$max_err_l" -B "$min_bs" -b "$max_bs" -m "$countl"k "$infile" "$outfile"
-      swallow_last_summary
+      echo "$logline" | "${tee}" -a "$logfile"
+
+      rescue -r -s "$next_pos"k -l "$logfile" -e "$max_err_l" -B "$min_bs" -b "$max_bs" -m "$countl"k "$infile" "$outfile"
   fi
 
   ## testing purpose
   [ "$TWICE" == "yes" ] && exit 128;
-
 
 done
 
