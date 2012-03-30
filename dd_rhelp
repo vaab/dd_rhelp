@@ -389,9 +389,12 @@ fi
 ## XXXVaab: was
 #string="^Summary for $infile -> $outfile:"
 ## which forbids to use different paths for same file between two resume...
-string="^Summary for [^:]\+ -> [^:]\+:\$"
 
 infoline="^dd_rescue: (info):"
+summary_first_line="$infoline \+ipos:.*, opos:.*, xferd:.*$"
+
+## infoline has been added to Summary line in dd_rescue output recently (> 1.14, <= 1.25)
+string="\($infoline\)\? *Summary for [^:]\+ -> [^:]\+:\$"
 eofstring="$infoline [^(]\+ ([0-9]\+\.[0-9]k): EOF\$"
 nb_stars=$[ $bar_lines * $COLUMNS ] # nb of char to display progress bar...
 badblockline_regexp="^Bad block: [0-9]\+\$"
@@ -1137,10 +1140,14 @@ function process_log() {
 
     ## Removes the summary lines that summed 0.0k xferd !
     ##  occurs on direct EOF...
+
+    ## Remove first line of summaries that had 0.0k transfered. (They are useless)
     # XXXVaab : bad if file is less that 0.1Ko length
     data=$(echo "$data" | "${grep}" -v "xferd: \+0.0k$")
     [ "$DEBUG" == "on" ] && echo -n "."
-    data=$(echo "$data" | "${grep}" "$infoline" -A 1 | "${cut}" -c 12-)
+
+
+    data=$(echo "$data" | "${grep}" "$summary_first_line" -A 1 | "${cut}" -c 12-)
     [ "$DEBUG" == "on" ] && echo -n "."
     data=$(echo "$data" | sed_compat 's/^\(info\): ipos: *//g')
     [ "$DEBUG" == "on" ] && echo -n "."
