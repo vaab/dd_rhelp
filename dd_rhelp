@@ -1430,20 +1430,13 @@ while [ "$(echo "$chunk" | "${wc}" -l)" -gt "1" ] ||
 
   ## Big Check of consistency
 
-  is_num "$next_pos" || print_error "Next position calculation returned : '$next_pos'. Please send your log file to $maintainer.";
-  is_num "$countr" || print_error "Step count right returned : '$countr'. Please send your log file to $maintainer";
-
-  is_num "$countl" || print_error "Step count left returned : '$countl'. Please send your log file to $maintainer";
-
-  is_num "$max_err_rk" || print_error "Max error count (in k) right returned : '$max_err_rk'. Please send your log file to $maintainer";
-
-  is_num "$max_err_lk" || print_error "Max error count (in k) left returned : '$max_err_lk'. Please send your log file to $maintainer";
-
-  is_num "$max_err_r" || print_error "Max error count right returned : '$max_err_r'. Please send your log file to $maintainer";
-
-  is_num "$max_err_l" || print_error "Max error count left returned : '$max_err_l'. Please send your log file to $maintainer";
-
-
+  is_num "$next_pos"   || print_error "Next position calculation returned: '$next_pos'. Please send your log file to $maintainer.";
+  is_num "$countr"     || print_error "Step count right returned: '$countr'. Please send your log file to $maintainer";
+  is_num "$countl"     || print_error "Step count left returned: '$countl'. Please send your log file to $maintainer";
+  is_num "$max_err_rk" || print_error "Max error count (in k) right returned: '$max_err_rk'. Please send your log file to $maintainer";
+  is_num "$max_err_lk" || print_error "Max error count (in k) left returned: '$max_err_lk'. Please send your log file to $maintainer";
+  is_num "$max_err_r"  || print_error "Max error count right returned: '$max_err_r'. Please send your log file to $maintainer";
+  is_num "$max_err_l"  || print_error "Max error count left returned: '$max_err_l'. Please send your log file to $maintainer";
 
   if [ "$next_pos" != "${eof}" ]; then
       if [ "$eof" == "nothing" ]; then
