@@ -63,7 +63,8 @@ maintainer="LAB Valentin <valentin.lab@kalysto.org>"
 
 include common
 
-depends sed grep cat cut tr head touch wc bc tail stat dirname basename df pwd sort tee
+depends sed grep cat cut tr head touch wc bc tail stat dirname basename df \
+        pwd sort tee sync
 
 usage="$exname {filename|device} {output-file} [{info}]
     or $exname --help
@@ -266,7 +267,8 @@ this warning."
     fi
 
 
-    logfile_diskspace="$("$df" --sync -k "$("$dirname" "$logfile")" | "$tail" -n 1 |  sed_compat "s/ +/ /g" | "$cut" -f 2 -d " ")"
+
+    logfile_diskspace="$("$sync" ; "$df" -k "$("$dirname" "$logfile")" | "$tail" -n 1 |  sed_compat "s/ +/ /g" | "$cut" -f 2 -d " ")"
 
     if [ "$(bc_calc 2 "$logfile_diskspace < 10000")" == "1" ]; then
 	print_warning "The available disk space on the location \
