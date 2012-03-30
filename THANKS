@@ -3,10 +3,9 @@ dd_rhelp THANKS file
 dd_rhelp has originally been written by Valentin LAB.
 dd_rescue has originally been written by Kurt Garloff.
 
- Many people further contributed to dd_rhelp by reporting problems,
-suggesting various improvements or submitting actual code.
-Here is a list of these people. Help me keep it complete and
-exempt of errors.
+  Many people further contributed to dd_rhelp by reporting problems, suggesting
+various improvements or submitting actual code.  Here is a list of these
+people. Hopin' that I'm forgetting nobody...
 
 Michael Lucas (for asking good questions)
 Asheesh Laroia (help for the Darwin / Mac OS X support)
@@ -14,6 +13,8 @@ Pätrick Guillot (for reminding me the problem with my obsoletes head/tail argum
 John Schlerf (for pointing out some bugs)
 Jim Wiedman (for pointing out some bugs)
 Seunghun Thomas Lee (for posting a BSD sed/stat compliant dd_rhelp)
+Ned Konz (for a MacOSX bug report and correction)
+Szilard Lovas <lovas.szilard@gmail.com> (for pointing out some bugs)
 
 And big thanks to all those from which I've received mail !
 
