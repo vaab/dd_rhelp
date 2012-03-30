@@ -8,8 +8,6 @@
 . /etc/shlib
 #!-
 
-include pretty
-include common
 include shunit
 
 depends sed grep cat cut tr head touch wc bc dd which dd_rescue
@@ -117,8 +115,6 @@ function tear_mock() {
 ## Tests
 ##
 
-#gnu_standards
-
 ##
 # Checking bad arguments
 function test_args {
@@ -147,6 +143,7 @@ function test_args {
 EOF
 
 }
+
 
 # were tested by commenting print_error
 function test_args_words () {
@@ -227,9 +224,7 @@ EOF
 
 	assert "dd_rescue in cur dir" ! ./$tprog "$temp2" "$temp1" \&\& ./$tprog "$temp2" "$temp1" "2>&1" \| "$grep" -i \"error.*summary\"
 
-	Elt Deleting dummy dd_rescue
-	rm -f "$tempdir/dd_rescue"
-	Feedback
+	Wrap -d "Deleting dummy dd_rescue" rm "$tempdir/dd_rescue"
 
     else
 
@@ -241,7 +236,6 @@ EOF
 	chmod +x "$tempdir/dd_rescue"
 	Feedback
 
-
 	assert_list <<EOF
 
 ## -- dd_rescue version is searched in "./" first
@@ -250,15 +244,11 @@ DEBUG=on ONCE=yes "./$tprog" "$temp2" "$temp1" 2>&1 | "$grep" -i "^- dd_rescue l
 
 EOF
 
-	Elt Deleting dummy dd_rescue
-	rm -f "$tempdir/dd_rescue" &&
-	cd -
-	Feedback
+	Wrap -d "Deleting dummy dd_rescue" rm "$tempdir/dd_rescue"
 
     fi
 
     tear_test
-
 }
 
 
@@ -297,6 +287,7 @@ function test_run () {
     Section Running Tests
 
     init_test
+    export DEBUG="on"
     assert "$tprog arg1 arg2 works fine with arg1 existing." ./$tprog "$temp2" "$temp1"
     assert "contents should be equal" diff "$temp2" "$temp1"
     tear_test
