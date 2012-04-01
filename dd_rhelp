@@ -1009,13 +1009,17 @@ function show_bar()
 
     if [ "$eof_limit" != "$last_chunk" ]
     then
-	echo "=== Bar was drawn from 0 to hypothetic end : $eof_limit"
+	echo "=== Bar was drawn from 0 to hypothetic end ($(pp_kb $eof_limit))"
     else
-	echo "=== Bar was drawn from 0 to $eof_limit"
+	echo "=== Bar was drawn from 0 to $(pp_kb $eof_limit)"
     fi
 }
 
+## pretty_print kb:
 
+function pp_kb () {
+    print_bytes "$(echo "$1 * 1024" | "$bc" -l )"
+}
 
 function show_info()
 {
@@ -1030,7 +1034,7 @@ function show_info()
 #	echo "- max file size : $eof"
 	np="$(get_next_pos)"
 
-	echo -e "- Biggest unparsed chunk : " "$(bc_calc 1 "$(echo "$np" | "${cut}" -f 2 -d ":") + $(echo "$np" | "${cut}" -f 3 -d ":")")" "k "
+	echo -e "- Biggest unparsed chunk: $(pp_kb $(bc_calc 1 "$(echo "$np" | "${cut}" -f 2 -d ":") + $(echo "$np" | "${cut}" -f 3 -d ":")"))"
     fi
 
     parsing="$logcontent"
@@ -1072,8 +1076,7 @@ function show_info()
 
     eof_limit=$(get_last_chunk)
 
-    echo -e "- xferd(succ/err) : ${total_xferd}k(${total_succxfer}k/${total_errxfer}k)"
-
+    echo -e "- xferd(succ/err): $(pp_kb ${total_xferd})($(pp_kb ${total_succxfer})/$(pp_kb ${total_errxfer}))"
 
     # if there are some data parsed
     if [ "$eof_limit" != 0 ]; then
@@ -1088,26 +1091,26 @@ function show_info()
 
 	BC_CALC_AUTHORIZE_NEG=true
 	[ "$eof" != "nothing" ] &&  [ "$eof" != "$eof_limit" ] &&
-	echo -e "    left to parse : between $(bc_calc 1 "$eof - $total_xferd")k and $(bc_calc 1 "$eof_limit - $total_xferd")k"
+	echo -e "    left to parse: between $(pp_kb "$(bc_calc 1 "$eof - $total_xferd")") and $(pp_kb "$(bc_calc 1 "$eof_limit - $total_xferd")")"
 
 	[ "$eof" != "nothing" ] &&  [ "$eof" == "$eof_limit" ] &&
-	echo -e "    left to parse : $(bc_calc 1 "$eof - $total_xferd")k"
+	echo -e "    left to parse: $(pp_kb "$(bc_calc 1 "$eof - $total_xferd")")"
 	BC_CALC_AUTHORIZE_NEG=false
 
 
-	echo -en "- EOF "
+	echo -en "- End of file: "
 
 	if  [ "$eof" != "nothing" ] &&
 	    [ "$eof" == "$eof_limit" ];then
 
-	    echo "is found and is at ${eof}k."
+	    echo " EOF = $(pp_kb ${eof})"
 
 
 	else
 	    if [ "$eof" != "nothing" ]; then
-		echo "is not found, but between ${eof_limit}k and ${eof}k."
+		echo "$(pp_kb ${eof}) <=  EOF <= $(pp_kb ${eof})"
 	    else
-		echo "is not found, but greater than ${eof_limit}k"
+		echo "$(pp_kb ${eof_limit}) <= EOF"
 	    fi
 	fi
     fi
@@ -1115,7 +1118,7 @@ function show_info()
 
     jump=$(get_next_pos | "${cut}" -f 1 -d ":")
 
-    [ "$jump" != "0" ] && echo -n "- Jump pos : $(get_next_pos | "${cut}" -f 1 -d ":") "
+    [ "$jump" != "0" ] && echo -n "- Next jump pos: $(pp_kb $(get_next_pos | "${cut}" -f 1 -d ":")) "
 
     if [ "$size" == "0" ] && [ "$eof" != "nothing" ] &&
 	[ "$eof" == "$eof_limit" ];then
@@ -1470,9 +1473,9 @@ while [ "$(echo "$chunk" | "${wc}" -l)" -gt "1" ] ||
   if [ "$next_pos" != "${eof}" ]; then
       if [ "$eof" == "nothing" ]; then
 	  countr=0;
-	  logline="=== parsing at ${next_pos}k, no upper limit, max continuous err: ${max_err_rk}k >>> ===";
+	  logline="=== parsing at $(pp_kb ${next_pos}), no upper limit, max continuous err: $(pp_kb ${max_err_rk}) >>> ===";
       else
-	  logline="=== parsing at ${next_pos}k, for ${countr}k, max continuous err: ${max_err_rk}k >>> ===";
+	  logline="=== parsing at $(pp_kb ${next_pos}), for $(pp_kb ${countr}), max continuous err: $(pp_kb ${max_err_rk}) >>> ===";
       fi
 
       echo "$logline" | "${tee}" -a "$logfile"
@@ -1485,7 +1488,7 @@ while [ "$(echo "$chunk" | "${wc}" -l)" -gt "1" ] ||
 
   if [ "$next_pos" != "0" -a "${countl}" != "0" ]; then
 
-      logline="=== parsing at ${next_pos}k, for ${countl}k, max continuous err: ${max_err_lk}k <<< ===";
+      logline="=== parsing at $(pp_kb ${next_pos}), for $(pp_kb ${countl}), max continuous err: $(pp_kb ${max_err_lk}) <<< ===";
       echo "$logline" | "${tee}" -a "$logfile"
 
       rescue -r -s "$next_pos"k -l "$logfile" -e "$max_err_l" -B "$min_bs" -b "$max_bs" -m "$countl"k "$infile" "$outfile"
