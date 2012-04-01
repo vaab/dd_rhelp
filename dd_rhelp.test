@@ -36,6 +36,7 @@ function init_test() {
     tempdir="$tmp/${tprog}_test.$$.dir"
 
     [ -e "$temp1" ] && rm "$temp1"
+    [ -e "$temp2" ] && rm "$temp2"
 
     "$dd" if="/dev/zero" of="$temp2" count=1 bs=1k >/dev/null 2>&1
 
@@ -48,6 +49,7 @@ function tear_test() {
 
     [ -e "$temp1" ] && rm -f "$temp1"
     [ -e "$temp2" ] && rm -f "$temp2"
+    [ -e "$temp1.log" ] && rm -f "$temp1.log"
 
     Feedback
 
