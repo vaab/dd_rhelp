@@ -1387,6 +1387,8 @@ fi
 
 DD_RESCUE="$(get_valid_dd_rescue)" || exit 1;
 
+[ "$DEBUG" == "on" ] && echo "CWD: $PWD"
+
 while [ "$(echo "$chunk" | "${wc}" -l)" -gt "1" ] ||
       [ "$(get_last_chunk)" != "$eof" ] ||
       [ "$eof" == "nothing" ]; do
@@ -1457,8 +1459,8 @@ while [ "$(echo "$chunk" | "${wc}" -l)" -gt "1" ] ||
 
 #    echo "max_err_l: " $max_err_l
 #    echo "max_err_r: " $max_err_r
-    echo "countr: " $countr
-    echo "countl: " $countl
+  [ "$DEBUG" == "on" ] && echo "countr: " $countr
+  [ "$DEBUG" == "on" ] && echo "countl: " $countl
 
   ## Big Check of consistency
 
