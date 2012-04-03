@@ -1017,7 +1017,8 @@ function show_bar()
 	done
 
     else
-	echo -n "[ No Bar available the first launch ]"
+	echo "[ No Bar available the first launch ]"
+        return
     fi
 
     last_chunk="$(get_last_chunk)"
