@@ -694,6 +694,9 @@ function add_chunk() {
 #
 function remove_chunk_on_eof() {
 
+    local goodchunk parsechunk i i_start i_stop
+
+    [ "$eof" == "nothing" ] && return
 
     goodchunk=""
     parsechunk="$chunk"
