@@ -90,6 +90,21 @@ as dd_rhelp feeds itself with its contents to manage correctly dd_rescue.
 Send bug reports, or comments to $email."
 
 
+dd_rescued_msg="All your data has been dd_rescued !!
+
+Please note that it doesn't mean that it has been RECOVERED:
+
+\`\`dd_rescue\`\` parsed all your drive and copied what could be copied. It's fairly
+sure that you cannot get more from your drive. You should now use with caution
+a filesystem recovering tool specific to your filesystem type to rebuild
+meta-data information.
+
+Then you should be able to mount partitions if needed.
+
+Good luck, and be patient !
+"
+
+
 ##
 # Is $1 numeric ?
 #
@@ -1373,8 +1388,8 @@ fi
 
 info="$(show_info)"
 if [ "$?" == "0" ] ; then
-    [ "$opt" == "info" ] && echo "$info"
-    echo "All your data has been dd_rescued."
+    [ "$opt" == "info" ] && { echo "$info"; echo ; }
+    echo "$dd_rescued_msg"
     exit 0;
 else
     if [ "$opt" == "info" ];then
@@ -1396,7 +1411,8 @@ while [ "$(echo "$chunk" | "${wc}" -l)" -gt "1" ] ||
   info="$(show_info)"
   if [ "$?" == "0" ] ; then
       echo "$info"
-      echo -n "All your data has been dd_rescued !! Please note that it doesn't mean that it has been RECOVERED : dd_rescue parsed all your drive and copied what could be copied. It's fairly sure that you cannot get more from your drive. You should now use with caution a filesystem recovering tool specific to your filesystem type to rebuild meta-data information. Then you should be able to mount partitions if needed."
+      echo
+      echo "$dd_rescued_msg"
       echo
       # show_bar
       exit 0
@@ -1502,11 +1518,10 @@ while [ "$(echo "$chunk" | "${wc}" -l)" -gt "1" ] ||
 done
 
 
-
 info="$(show_info)"
 if [ "$?" == "0" ] ; then
     echo "$info"
-    echo -n "All your data has been dd_rescued !! Please note that it doesn't mean that it has been RECOVERED : dd_rescue parsed all your drive and copied what could be copied. It's fairly sure that you cannot get more from your drive. You should now use with caution a filesystem recovering tool specific to your filesystem type to rebuild meta-data information. Then you should be able to mount partitions if needed."
+    echo "$dd_rescued_msg"
     echo
     exit 0
 fi
