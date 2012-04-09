@@ -1379,7 +1379,6 @@ if [ "$load_log_ok" != "yes" ]; then
     exit 1
 fi
 
-save_log
 
 if [ "$opt" == "info" ] && test -z "$logcontent" ; then
     echo "No Info found in log..."
@@ -1399,7 +1398,11 @@ else
     fi
 fi
 
+## Save computed version of log for next time in the logfile.
+save_log
+
 [ "$opt" == "info" ] && exit 0
+
 
 DD_RESCUE="$(get_valid_dd_rescue)" || exit 1;
 
