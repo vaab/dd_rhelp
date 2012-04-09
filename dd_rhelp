@@ -1372,7 +1372,6 @@ function rescue() {
 
 # === beginning of real code
 
-#echo load
 load_log
 
 if [ "$load_log_ok" != "yes" ]; then
@@ -1380,8 +1379,6 @@ if [ "$load_log_ok" != "yes" ]; then
     exit 1
 fi
 
-# Save computed version of log for next time.
-#echo save
 save_log
 
 if [ "$opt" == "info" ] && test -z "$logcontent" ; then
