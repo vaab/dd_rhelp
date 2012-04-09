@@ -53,11 +53,10 @@ default_log_paths=". ~ /tmp" # if default log path is in a small filesystem
 
 # Meta data description
 
-email="vaab@free.fr"
-version="0.2.0"
+email="valentin.lab@kalysto.org"
+version="%%version%%"
 state="beta"
 author="LAB Valentin"
-
 maintainer="LAB Valentin <valentin.lab@kalysto.org>"
 
 
