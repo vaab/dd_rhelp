@@ -19,30 +19,32 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-
 #!- Library include
 . /etc/shlib
 #!- 
 
 
-# === VARS :
-#
-# Feel free to change them.
+## === VARS :
+##
+## Feel free to change them.
 
-max_err_min=5     # number of contiguous error needed to jump to a new location
-                  #  DO NOT SET TO "1"...
+max_err_min=5     ## number of contiguous error needed to jump to a new location
+                  ##  DO NOT SET TO "1"...
 
-max_chunks=300   # number of maximum chunks allowed
-min_chunks=15    # number of minimum chunks to start modifying max_err
-
-
-min_bs=512    # min block size (see dd_rescue's help)
-max_bs=16384  # max block size (see dd_rescue's help)
-bar_lines=15  # nb of lines for bar drawing.
+max_chunks=300    ## number of maximum chunks allowed
+min_chunks=15     ## number of minimum chunks to start modifying max_err
 
 
-## Displacement in hole : this reduce or augment
-## rear dd_rescueing versus forward dd_rescueing.
+min_bs=512        ## min block size (see dd_rescue's help)
+max_bs=16384      ## max block size (see dd_rescue's help)
+bar_lines=15      ## nb of lines for bar drawing.
+
+
+## Displacement in holes: this tweaks dd_rescue starting position in an
+## unparsed chunk.
+##  0.3 is 30% in segment: to the one third of the segment. This means
+##    that there will be 2 times more forward dd_rescuing (fast) than
+##    backwards dd_rescuing (slow).
 [ -z "$coef" ] && coef="0.3"
 
 
@@ -50,8 +52,10 @@ default_log_paths=". ~ /tmp" # if default log path is in a small filesystem
                              #   or a virtual filesystem (as /dev or /proc)
                              #   then these paths will be tried.
 
+##
+## Meta data description
+##
 
-# Meta data description
 
 email="valentin.lab@kalysto.org"
 version="%%version%%"
