@@ -158,7 +158,7 @@ s/%%short-version%%/${short_version}/g"
 ##
 
 if type -t gitchangelog > /dev/null 2>&1 ; then
-    gitchangelog > ChangeLog
+    GITCHANGELOG_CONFIG_FILENAME="./.gitchangelog.rc" gitchangelog > ChangeLog
     if [ "$?" != 0 ]; then
         print_error "Error while generating ChangeLog."
     fi
