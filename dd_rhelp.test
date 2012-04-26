@@ -10,7 +10,7 @@
 
 include shunit
 
-depends sed grep cat cut tr head touch wc bc dd which dd_rescue
+depends sed grep cat cut tr head touch wc bc dd which dd_rescue diff
 
 export -f matches
 export grep
@@ -465,5 +465,57 @@ EOF
      tear_mock
 
 }
+
+function sparse_file_test() {
+
+    test -z "$1" && print_syntax_error "missing first arg (sparse file) for sparse_file_test function."
+    test -z "$2" && print_syntax_error "missing second arg (complete file) for sparse_file_test function."
+
+    dst=$1
+    src=$2
+
+    fixture_dir="test/fixture"
+
+    test -e "$fixture_dir" || print_error "fixture directory $fixture_dir not found."
+
+    temp1="$tmp/${tprog}_test.$$.a.tmp"
+    temp2="$tmp/${tprog}_test.$$.b.tmp"
+
+    Section "Finishing $src --> $dst"
+    Wrap -d "Setting up test" <<EOF
+
+    cp "$fixture_dir/$src" "$temp2" &&
+    cp "$fixture_dir/$dst" "$temp1" &&
+    cp "$fixture_dir/$dst.log" "$temp1.log"
+
+EOF
+
+    assert_list <<EOF
+
+## -- dd_rescue should run flawlessly
+
+DEBUG=on coef=0.3 ./$tprog "$temp2" "$temp1"
+
+## -- src and dst files should be the same
+
+"$diff" "$temp1" "$temp2"
+
+EOF
+
+    #cat "$temp1.log"
+
+    tear_test
+
+
+}
+
+
+function test_precise_boundary {
+
+    sparse_file_test 12____789.dat 123456789.dat
+    sparse_file_test 12____7_9.dat 123456789.dat
+
+}
+
 
 testbench $*
