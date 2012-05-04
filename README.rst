@@ -218,15 +218,30 @@ If you have any other experiences of ``dd_rhelp``, please let me know.
 
 .. note:: This shell script needs version >= 1.03 of ``dd_rescue`` !!!!
 
-I want to look in the code, but it's really complicated
--------------------------------------------------------
 
-Yes, I know. This is a big bash script because I rely on a personnal shell
-library which finishes included nearly completely at the beginning of the
-script.
+How can I contribute ?
+''''''''''''''''''''''
 
-Feel free to modify, give hint or else.
+The source code is on github_. Feel free to fork it and start hacking around,
+I'll be gratefull to receive some pull requests.
 
-We are all knowing that a quick C program should be better. So feel free to
-create it ! And this is what Antonio Diaz did for its "GNU ddrescue" program,
-make sure to have a look to it before using ``dd_rhelp``.
+.. _github: http://github.com/vaab/dd_rhelp
+
+You should also note that ``dd_rhelp`` code is separated in 2 parts:
+
+- the libraries that are in the beginning of the file
+- the actual ``dd_rhelp`` code which is at the end of the file
+
+The library are actually included when I have to create a new package. They are
+accessible on a different repository than dd_rhelp code itself. These library
+are called ``kal-shlib-*``.
+
+kal-shlib-common_ contains the code included in ``dd_rhelp``.
+
+kal-shlib-pretty_, kal-shlib-shunit_, are the repositories for the libraries
+used (and included) in ``dd_rhelp.test``, the unit test file.
+
+.. _kal-shlib-common: http://github.com/vaab/kal-shlib-common
+.. _kal-shlib-pretty: http://github.com/vaab/kal-shlib-pretty
+.. _kal-shlib-shunit: http://github.com/vaab/kal-shlib-shunit
+
