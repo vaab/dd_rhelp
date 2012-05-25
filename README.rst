@@ -216,7 +216,8 @@ are appreciated.
 
 If you have any other experiences of ``dd_rhelp``, please let me know.
 
-.. note:: This shell script needs version >= 1.03 of ``dd_rescue`` !!!!
+.. note:: This shell script needs version >= 1.03 of ``dd_rescue`` ! And was
+          tested with all version up to ``1.28``.
 
 
 How can I contribute ?
