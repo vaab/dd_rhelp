@@ -245,7 +245,7 @@ EOF
 
 ## -- dd_rescue version is searched in "./" first
 
-DEBUG=on ONCE=yes "./$tprog" "$temp2" "$temp1" 2>&1 | "$grep" -i "^- dd_rescue location : './dd_rescue'"
+DEBUG=on ONCE=yes "./$tprog" "$temp2" "$temp1" 2>&1 | "$grep" -i "^- dd_rescue location: './dd_rescue'"
 
 EOF
 
