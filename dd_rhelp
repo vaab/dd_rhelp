@@ -39,6 +39,8 @@ min_bs=512        ## min block size (see dd_rescue's help)
 max_bs=16384      ## max block size (see dd_rescue's help)
 bar_lines=15      ## nb of lines for bar drawing.
 
+dd_rescue_args="" ## default global argument to dd_rescue call
+
 
 ## Displacement in holes: this tweaks dd_rescue starting position in an
 ## unparsed chunk.
@@ -435,7 +437,7 @@ chunk=""
 #
 #
 #
-#
+# WARNING: can modify the global variable ``$dd_rescue_args``
 function get_valid_dd_rescue() {
 
     [ "$DEBUG" == "on" ] && echo "Finding dd_rescue binary" >&2
@@ -1352,12 +1354,13 @@ function save_log() {
 # Requires
 #   env:
 #      $DD_RESCUE variable should be the path to dd_rescue executable
+#      $dd_rescue_args variable should be general dd_rescue args if any
 #      $logfile sould ne the current logfile
 function rescue() {
 
-      echo "${DD_RESCUE}" "$@" | "${tee}" -a "$logfile"
+      echo "${DD_RESCUE}" $dd_rescue_args "$@" | "${tee}" -a "$logfile"
 
-      "${DD_RESCUE}" "$@"
+      "${DD_RESCUE}" $dd_rescue_args "$@"
       errlvl="$?"
 
       case "$errlvl" in
@@ -1408,6 +1411,14 @@ save_log
 
 
 DD_RESCUE="$(get_valid_dd_rescue)" || exit 1;
+
+dd_rescue_version=$("$DD_RESCUE" -V 2>&1 | "${grep}" "dd_rescue Version" | "$cut" -f 3 -d " " | "$cut" -f 1 -d ",")
+if [ "$(bc_calc 2 "$dd_rescue_version >= 1.12")" == "1" -a "$(bc_calc 2 "$dd_rescue_version < 1.23")" == "1" ]; then
+    dd_rescue_args="$dd_rescue_args -y0"
+fi
+
+[ "$DEBUG" == "on" ] && [ "$dd_rescue_args" ] && echo -e "OK\n- dd_rescue default options: $dd_rescue_args" >&2
+
 
 [ "$DEBUG" == "on" ] && echo "CWD: $PWD"
 
