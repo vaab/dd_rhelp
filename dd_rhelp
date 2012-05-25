@@ -479,7 +479,7 @@ function get_valid_dd_rescue() {
 
     [ "$DEBUG" == "on" ] && echo -n "Trying '$path' : gives this version: '$version'..." >&2
 
-    if [ "$(bc_calc 2 "$version < 1.03")" == "0" ]; then
+    if [ "$(bc_calc 2 "$version >= 1.03")" == "1" ]; then
         [ "$DEBUG" == "on" ] && echo -e "OK\n- dd_rescue location : '$path'" >&2
 	echo "$path"
 	return 0
